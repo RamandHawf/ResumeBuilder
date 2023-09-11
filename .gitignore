@@ -1,0 +1,14 @@
+/node_modules
+/vendor
+npm-debug.log
+yarn-error.log
+.env
+.DS_Store
+app/controllers/PoolController.js
+app/controllers/PackageController.js
+app/controllers/OrderController.js
+models/order.js
+models/package.js
+models/pool.js
+models/Transactions.js
+app/controllers/TransactionsController.js
