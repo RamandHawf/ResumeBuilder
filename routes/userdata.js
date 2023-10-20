@@ -4,19 +4,19 @@ const userDataController = require('../app/controllers/UserDataController');
 // const PackageController = require('../app/controllers/PackageController');
 // router.get('/login', jobeDetailController.loginPage);
 // Create a new resume
-router.post('/createUserData', userDataController.createUserData);
+router.post('/createuserdata', userDataController.createUserData);
 
 // Get user data by ID
-router.get('/getAllUserData', userDataController.getUserData);
+router.get('/getalluserdata', userDataController.getUserData);
 
-router.get('/getUserDatabyId/:id', userDataController.getUserDatabyid);
+router.get("/getuserdatabyid/:id", userDataController.getUserDatabyid);
 
 
 // Update user data by ID
-router.put('/updateUserData/:id', userDataController.updateUserData);
+router.put('/updateuserdata/:id', userDataController.updateUserData);
 
 // Delete user data by ID
-router.delete('/deleteUserData/:id', userDataController.deleteUserData);
+router.delete('/deleteuserdata/:id', userDataController.deleteUserData);
 
 
 

@@ -1,35 +1,53 @@
 const express = require("express");
 const axios = require("axios");
+const AWS = require("aws-sdk");
 const multer = require("multer");
-const FormData = require("form-data");
 const fs = require("fs");
-let data = new FormData();
+// const fileType = require("file-type");
+const FormData = require("form-data");
+// const s3 = require("./../../config/config"); // Adjust the path to match the location of your 's3Config.js' file
+
+// console.log(process.env.S3BUCKET_NAME);
+
+// Your JSON data as a string
+
+console.log(process.env.S3BUCKET_ACCESS_KEYID);
+console.log(process.env.S3BUCKET_SECRETACCESSKEY);
+console.log(process.env.S3BUCKET_REGION);
+
+const s3 = new AWS.S3({
+  accessKeyId: process.env.S3BUCKET_ACCESS_KEYID,
+  secretAccessKey: process.env.S3BUCKET_SECRETACCESSKEY,
+  region: process.env.S3BUCKET_REGION,
+});
+
 exports.createAIresume = async (req, res, next) => {
   const { AIresume } = req.db.models;
 
-  const { username, password, link } = req.query;
-  const id = req.params.id;
-
+  const { userDataId, job_desc, json_resume } = req.body;
   try {
     // Check the file type (MIME type)
-
-    if (!req.file) {
-      res.status(500).send({ message: "Please Upload the pdf or .docs file" });
+    if (!userDataId || !job_desc || !json_resume) {
+      return res.status(400).json({
+        message:
+          "You are not providing the detail  UserDataId ,job_Description and resume data.",
+      });
     }
-
-    if (req.file) {
-      const pdfFilePath = `public/uploads/${req.file.filename}`;
-
+    if (userDataId && job_desc && json_resume) {
+      const jsonString1 = JSON.parse(job_desc);
+      const jsonString2 = JSON.parse(json_resume);
+      console.log("First One", jsonString1);
+      console.log("Second One", jsonString2);
+      fs.writeFileSync("job_desc.json", job_desc);
+      fs.writeFileSync("json_resume.json", json_resume);
       const data = new FormData();
-      data.append("file", fs.createReadStream(pdfFilePath));
-      data.append("username", username);
-      data.append("password", password);
-      data.append("link", link);
+      data.append("job_desc", fs.createReadStream("job_desc.json"));
+      data.append("json_resume", fs.createReadStream("json_resume.json"));
 
-      const config = {
-        method: "post",
+      let config = {
+        method: "POST",
         maxBodyLength: Infinity,
-        url: `${process.env.AI_URL}/parse_resume`,
+        url: `${process.env.AI_URL}/generate_ai_resume`,
         headers: {
           ...data.getHeaders(),
         },
@@ -39,50 +57,56 @@ exports.createAIresume = async (req, res, next) => {
       axios
         .request(config)
         .then((response) => {
-          let resp = JSON.stringify(response.data);
-          let resps = JSON.parse(resp);
-          if (resps.error) {
-            res.status(500).send({
-              status: false,
-              response: resps,
-            });
-          } else {
-            const AIResumeLink = `${
-              process.env.URL_SERVER + req.file.filename
-            }`;
-
-            console.log(AIResumeLink);
-            const newAIresume = {
-              AIresumeLink: "your_link_here",
-              AIresumeDetail: resps,
-              JobDescriptionUrl: link,
-              ParsedResumeDetail: "your_parsed_resume_detail_here",
-              userId: id,
-            };
-
-            AIresume.create(newAIresume)
-              .then((createdAIresume) => {
-                console.log(
-                  "AIresume created successfully:",
-                  createdAIresume.toJSON()
-                );
-                res.status(200).send({ status: true, data: createdAIresume });
+          const decodedBuffer = Buffer.from(response.data[0], "base64");
+          // fs.writeFileSync(
+          //   `AI-Resume-${userDataId}-${Date.now()}.pdf`,
+          //   response.data[0]
+          // );
+          console.log(JSON.stringify(response.data));
+          const params = {
+            Bucket: process.env.S3BUCKET_NAME,
+            Key: `AI-Resume-${userDataId}-${Date.now()}.pdf`, // Use the original filename for the S3 object
+            Body: decodedBuffer,
+          };
+          s3.upload(params, async (err, data) => {
+            if (err) {
+              return res
+                .status(500)
+                .json({ message: "Error uploading file to S3.", error: err });
+            }
+            if (data?.Location) {
+              AIresume.create({
+                AIresumeLink: data.Location,
+                AIresumeDetail: JSON.stringify(response.data[1]),
+                userDataId: userDataId,
               })
-              .catch((error) => {
-                console.error("Error creating AIresume:", error);
-                res.status(400).send({ status: false, data: error });
+                .then((response) => {
+                  res.status(201).json(response);
+                })
+                .catch((err) => {
+                  console.log(err);
+                  res
+                    .status(500)
+                    .send({ message: "Internal Server Error", error: err });
+                });
+            } else {
+              res.status(200).send({
+                message: "Something Went Wrong Please Try Again",
+                data: data,
               });
-          }
+            }
+            // next();
+          });
         })
         .catch((error) => {
-          console.log("Error calling the third-party API:", error);
-          return res.status(500).json({
-            status: false,
-            message: "An error occurred while calling the third-party API.",
-            error,
-          });
+          console.log(error);
+          res.status(500).send({ message: "Internal Server Error" });
         });
+    } else {
+      res.status(201).send({ message: "Try Again" });
     }
+
+    // Create a FormData object to send the file to the third-party API
   } catch (error) {
     console.error("Error creating AI resume:", error);
     return res.status(500).json({
@@ -212,3 +236,25 @@ exports.deleteAIresume = async (req, res, next) => {
     });
   }
 };
+
+function decodeBase64AndExtractFileInfo(base64Data) {
+  // Decode Base64 data
+  const buffer = Buffer.from(base64Data, "base64");
+
+  // Extract file name and file extension (if available)
+  const originalFileName = "decoded_file"; // Default name if not found
+  let fileExtension = "";
+
+  // Extract original file name and extension (if available)
+  const fileNameMatch = originalFileName.match(/(.+)\.(.+)$/);
+  if (fileNameMatch) {
+    originalFileName = fileNameMatch[1];
+    fileExtension = fileNameMatch[2];
+  }
+
+  return {
+    originalFileName,
+    fileExtension,
+    decodedData: buffer,
+  };
+}

@@ -1,0 +1,3 @@
+{
+  "ignore": ["*.test.txt", "job_desc.json", "json_resume.json"]
+}

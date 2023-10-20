@@ -5,6 +5,7 @@ var jwt = require("jsonwebtoken");
 const validator = require("validator");
 
 const sendMail = require("../../helpers/nodeMailer");
+console.log("process.env.STRIPE_SECRET_KEY)", process.env.STRIPE_SECRET_KEY);
 const stripe = require("stripe")(process.env.STRIPE_SECRET_KEY); // Replace with your Stripe secret key
 
 exports.createpayment = async (req, res) => {
@@ -31,92 +32,207 @@ exports.createpayment = async (req, res) => {
   }
 };
 
-exports.createsubscription = async (req, res, next) => {
+exports.createSubscription = async (req, res, next) => {
   try {
-    const { email, priceId, paymentMethodId } = req.body;
+    const { priceId, paymentMethodId, customerId } = req.body;
 
-    // Create a new customer
-    const customer = await stripe.customers.create({
-      email: email,
-      // Add other customer information as needed
+    console.log(req.body);
+
+    if (!priceId || !paymentMethodId || !customerId) {
+      return res
+        .status(400)
+        .json({ message: "Provide all Details--Provided Details are empty" });
+    }
+
+    // Attach the payment method to the customer
+    const rest = await stripe.paymentMethods.attach(paymentMethodId, {
+      customer: customerId,
     });
 
-    console.log("Customer created:", customer);
-
-    // Create a Payment Method
-    //   const paymentMethod = await stripe.paymentMethods.create({
-    //     type: 'card',
-    //     card: {
-    //       number: '4242424242424242', // Replace with the actual card number
-    //       exp_month: 12,              // Replace with the expiration month
-    //       exp_year: 2025,             // Replace with the expiration year
-    //       cvc: '123',                 // Replace with the CVC
-    //     },
-    //   });
-
-    //   console.log('Payment method created:', paymentMethod);
-
-    // Attach the Payment Method to the Customer
-    await stripe.paymentMethods.attach(paymentMethodId, {
-      customer: customer.id, // Replace with the customer's ID
+    // Set the payment method as the default for the customer
+    const rest2 = await stripe.customers.update(customerId, {
+      invoice_settings: {
+        default_payment_method: paymentMethodId,
+      },
     });
 
-    console.log("Payment method attached to customer");
-
-    // Create a subscription for the new customer
+    // Create the subscription
     const subscription = await stripe.subscriptions.create({
-      customer: customer.id, // Use the newly created customer's ID
+      customer: customerId,
       items: [{ price: priceId }],
       default_payment_method: paymentMethodId,
     });
+    console.log("Response of Payement Method aTTACH");
+    console.log(rest);
+
+    console.log(
+      "Response of Customer Update for the data of PaymentMethod to default"
+    );
+    console.log(rest2);
 
     console.log("Subscription created:", subscription);
 
-    res.json({ subscription });
+    res.status(200).send({ subscription });
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({ error: error.message });
+  }
+};
+
+// Endpoint to stop auto-renewal for a subscription
+exports.stopAutoRenewal = async (req, res) => {
+  try {
+    const { subscriptionId } = req.body;
+
+    if (!subscriptionId) {
+      return res.status(400).json({ message: "Subscription ID is required" });
+    }
+
+    const canceledSubscription = await stripe.subscriptions.update(
+      subscriptionId,
+      {
+        cancel_at_period_end: true,
+      }
+    );
+
+    res.status(200).json({
+      message: "Auto-renewal stopped",
+      subscription: canceledSubscription,
+    });
+  } catch (error) {
+    console.error("Error stopping auto-renewal:", error);
+    res
+      .status(500)
+      .json({ message: "Failed to stop auto-renewal", error: error.message });
+  }
+};
+
+// Endpoint to start auto-renewal for a subscription
+exports.startAutoRenewal = async (req, res) => {
+  try {
+    const { subscriptionId } = req.body;
+
+    if (!subscriptionId) {
+      return res.status(400).json({ message: "Subscription ID is required" });
+    }
+
+    const updatedSubscription = await stripe.subscriptions.update(
+      subscriptionId,
+      {
+        cancel_at_period_end: false,
+      }
+    );
+
+    res.status(200).json({
+      message: "Auto-renewal started",
+      subscription: updatedSubscription,
+    });
+  } catch (error) {
+    console.error("Error starting auto-renewal:", error);
+    res
+      .status(500)
+      .json({ message: "Failed to start auto-renewal", error: error.message });
+  }
+};
+
+exports.getAllProductDetails = async (req, res) => {
+  try {
+    const products = await stripe.products.list();
+
+    res.status(200).json(products.data);
+  } catch (error) {
+    console.error("Error fetching product details:", error);
+    res.status(500).json({
+      message: "Failed to fetch product details",
+      error: error.message,
+    });
+  }
+};
+
+exports.updateSubscription = async (req, res) => {
+  try {
+    const { subscriptionId, newPriceId } = req.body;
+
+    if (!subscriptionId || !newPriceId) {
+      res
+        .status(400)
+        .send({ message: "Provide ProductPriceId and SubscriptionId!" });
+    }
+
+    const updatedSubscription = await stripe.subscriptions.update(
+      subscriptionId,
+      {
+        items: [{ price: newPriceId }],
+      }
+    );
+
+    res.status(200).json(updatedSubscription);
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
 };
 
-// exports.createsubscription = async (req, res, next) => {
-//     try {
-//       const { email, priceId } = req.body;
+exports.cancelSubscription = async (req, res) => {
+  try {
+    const { subscriptionId } = req.body;
+    if (!subscriptionId) {
+      res.status(400).send({ message: "Provide Subscription Id!" });
+    }
 
-//       // Create a new customer
-//       const customer = await stripe.customers.create({
-//         email: email,
-//         // Add other customer information as needed
-//       });
+    const canceledSubscription = await stripe.subscriptions.del(subscriptionId);
 
-//       console.log('Customer created:', customer);
+    res.status(200).json({ message: "Subscription canceled successfully" });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
 
-//       // Create a Payment Method using a test token (e.g., 'tok_visa')
-//       const paymentMethod = await stripe.paymentMethods.create({
-//         type: 'card',
-//         card: {
-//           token: 'tok_visa', // Use a test token provided by Stripe
-//         },
-//       });
+// stripe.products
+//   .create({
+//     name: "Your Product Name", // Replace with your product name
+//     type: "service", // Change to 'good' or 'service' based on your use case
+//   })
+//   .then((product) => {
+//     console.log("Product created:", product);
 
-//       console.log('Payment method created:', paymentMethod);
+//     // Create a one-time payment (price without recurring)
+//     return stripe.prices.create({
+//       unit_amount: 999, // Replace with the price in cents
+//       currency: "usd", // Change the currency as needed
+//       recurring: null, // Set recurring to null for a one-time payment
+//       product: product.id, // ID of the product created earlier
+//     });
+//   })
+//   .then((price) => {
+//     console.log("Price created:", price);
+//   })
+//   .catch((error) => {
+//     console.error("Error creating product and price:", error);
+//   });
 
-//       // Attach the Payment Method to the Customer
-//       await stripe.paymentMethods.attach(paymentMethod.id, {
-//         customer: customer.id, // Replace with the customer's ID
-//       });
+// stripe.products.create({
+//   name: 'Your Product Name', // Replace with your product name
+//   type: 'service', // Change to 'good' or 'service' based on your use case
+// })
+//   .then(product => {
+//     console.log('Product created:', product);
 
-//       console.log('Payment method attached to customer');
-
-//       // Create a subscription for the new customer
-//       const subscription = await stripe.subscriptions.create({
-//         customer: customer.id, // Use the newly created customer's ID
-//         items: [{ price: priceId }],
-//       });
-
-//       console.log('Subscription created:', subscription);
-
-//       res.json({ subscription });
-//     } catch (error) {
-//       res.status(500).json({ error: error.message });
-//     }
-//   };
+//     // Create a fixed-price subscription plan
+//     return stripe.prices.create({
+//       unit_amount: 999, // Replace with the subscription price in cents
+//       currency: 'usd', // Change the currency as needed
+//       recurring: {
+//         interval: 'month', // Billing interval
+//         interval_count: 1, // Set to 1 for monthly
+//       },
+//       nickname: 'Monthly Subscription', // Set the nickname for your subscription
+//       product: product.id, // ID of the product created earlier
+//     });
+//   })
+//   .then(price => {
+//     console.log('Price created:', price);
+//   })
+//   .catch(error => {
+//     console.error('Error creating product and price:', error);
+//   });xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxz xx
+//   });xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxz

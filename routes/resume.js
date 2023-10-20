@@ -1,26 +1,30 @@
-const express = require('express');
+const express = require("express");
 const router = express.Router();
-const resumeController = require('../app/controllers/ResumeController');
+const resumeController = require("../app/controllers/ResumeController");
+const multer = require("multer");
+const AWS = require("aws-sdk");
 // const PackageController = require('../app/controllers/PackageController');
-
 
 // router.get('/login', jobeDetailController.loginPage);
 // Create a new resume
-router.post('/createresume', resumeController.createResume);
+const storage = multer.memoryStorage();
+const upload = multer({ storage: storage });
+
+router.post(
+  "/parse_user_resume",
+  upload.single("file"),
+  resumeController.createResume
+);
 
 // Get resume by ID
-router.get('/getallresumedata', resumeController.getallresume);
+router.get("/getallresumedata", resumeController.getallresume);
 
-router.get('/getresumedatabyId/:id', resumeController.getResumeById);
+router.get("/getresumedatabyid/:id", resumeController.getResumeById);
 
 // Update resume by ID
-router.put('/updateresumedata/:id', resumeController.updateResumeById);
+router.put("/updateresumedata/:id", resumeController.updateResumeById);
 
 // Delete resume by ID
-router.delete('/deleteresume/:id', resumeController.deleteResumeById);
-
-
-
-
+router.delete("/deleteresume/:id", resumeController.deleteResumeById);
 
 module.exports = router;

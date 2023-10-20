@@ -1,21 +1,57 @@
+const axios = require("axios");
+const FormData = require("form-data");
+let data = new FormData();
+
 // In your controllers.js or where your CRUD functions are defined:
 exports.createJobDetail = async (req, res, next) => {
   const { jobDetail } = req.db.models;
-  const { jobdetaillink, jobdetail, userDataId } = req.body;
+  const { jobdetaillink, userDataId } = req.body;
 
+  console.log(req.body);
   try {
-    const newJobDetail = await jobDetail.create({
-      jobdetaillink:jobdetaillink,
-      jobdetail:jobdetail,
-      userDataId:userDataId,
-    });
-    return res.status(201).json({
-      status: true,
-      message: "Job detail created successfully.",
-      jobDetail: newJobDetail,
-    });
+    if (!jobdetaillink || !userDataId) {
+      res
+        .status(200)
+        .send({ message: "Provide job detail link and UserDataId" });
+    }
+
+    if (jobdetaillink && userDataId) {
+      data.append("link", jobdetaillink);
+      data.append("username", process.env.USERNAME_INDEED);
+      data.append("password", process.env.PASSWORD_INDEED);
+
+      let config = {
+        method: "post",
+        maxBodyLength: Infinity,
+        url: "http://localhost:5000/get_jobdesc",
+        headers: {
+          ...data.getHeaders(),
+        },
+        data: data,
+      };
+
+      axios
+        .request(config)
+        .then(async (response) => {
+          let resps = JSON.stringify(response.data);
+
+          const newJobDetail = await jobDetail.create({
+            jobdetaillink: jobdetaillink,
+            jobdetail: resps,
+            userDataId: userDataId,
+          });
+          return res.status(201).json({
+            status: true,
+            message: "Job detail created successfully.",
+            jobDetail: newJobDetail,
+          });
+        })
+        .catch((error) => {
+          console.log(error);
+        });
+    }
   } catch (error) {
-    console.error('Error creating job detail:', error);
+    console.error("Error creating job detail:", error);
     return res.status(500).json({
       status: false,
       message: "An error occurred while creating the job detail.",
@@ -42,7 +78,7 @@ exports.getAllJobDetail = async (req, res, next) => {
       jobDetail: jobDetailData,
     });
   } catch (error) {
-    console.error('Error getting job details:', error);
+    console.error("Error getting job details:", error);
     return res.status(500).json({
       status: false,
       message: "An error occurred while getting the job detail.",
@@ -50,7 +86,6 @@ exports.getAllJobDetail = async (req, res, next) => {
     });
   }
 };
-
 
 exports.getJobDetailById = async (req, res, next) => {
   const { jobDetail } = req.db.models;
@@ -69,7 +104,7 @@ exports.getJobDetailById = async (req, res, next) => {
       jobDetail: jobDetailData,
     });
   } catch (error) {
-    console.error('Error getting job detail by ID:', error);
+    console.error("Error getting job detail by ID:", error);
     return res.status(500).json({
       status: false,
       message: "An error occurred while getting the job detail.",
@@ -99,7 +134,7 @@ exports.updateJobDetail = async (req, res, next) => {
       jobDetail: jobDetailData,
     });
   } catch (error) {
-    console.error('Error updating job detail:', error);
+    console.error("Error updating job detail:", error);
     return res.status(500).json({
       status: false,
       message: "An error occurred while updating the job detail.",
@@ -127,7 +162,7 @@ exports.deleteJobDetail = async (req, res, next) => {
       message: "Job detail deleted successfully.",
     });
   } catch (error) {
-    console.error('Error deleting job detail:', error);
+    console.error("Error deleting job detail:", error);
     return res.status(500).json({
       status: false,
       message: "An error occurred while deleting the job detail.",

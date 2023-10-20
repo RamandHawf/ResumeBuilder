@@ -1,16 +1,16 @@
 const crypto = require("crypto");
 const bcrypt = require("bcryptjs");
 var jwt = require("jsonwebtoken");
-const path = require("path")
-// const nodemailer = require("nodemailer");
+const path = require("path");
 const validator = require("validator");
-
+console.log("process.env.STRIPE_SECRET_KEY ", process.env.STRIPE_SECRET_KEY);
+const stripe = require("stripe")(process.env.STRIPE_SECRET_KEY);
 const sendMail = require("../../helpers/nodeMailer");
 
 exports.login = (req, res, next) => {
   try {
     const { User } = req.db.models;
-    console.log(User)
+    console.log(User);
     const validationErrors = [];
     if (!validator.isEmail(req.body.email))
       validationErrors.push("Please enter a valid email address.");
@@ -105,7 +105,6 @@ exports.login = (req, res, next) => {
   }
 };
 
-
 exports.logout = (req, res, next) => {
   if (res.locals.isAuthenticated) {
     req.session.destroy((err) => {
@@ -118,7 +117,7 @@ exports.logout = (req, res, next) => {
 
 exports.signUp = (req, res, next) => {
   const { User } = req.db.models;
-  console.log(User)
+  console.log(User);
 
   User.findOne({
     where: {
@@ -137,28 +136,34 @@ exports.signUp = (req, res, next) => {
               process.env.JWT_VERIFY_TOKEN,
               { expiresIn: `${process.env.VERIFY_TOKEN_EXPIRY}` }
             );
+            const customer = await stripe.customers.create({
+              email: req.body.email,
+            });
 
             const user = new User({
               fullName: req.body.fullName,
               email: req.body.email,
               password: hashedPassword,
               verificationToken: token,
-              isVerified:1,
+              isVerified: 0,
+              stripeCustomerId: customer.id,
+              userType: "Basic Plan",
             });
             // console.log()
-            let a =user.save();
-            console.log(a)
+            let a = user.save();
+            console.log(a);
             return a;
-
           })
           .then(async (result) => {
-            console.log(result.dataValues.verificationToken)
-             await sendMail({
+            console.log(result.dataValues.verificationToken);
+            await sendMail({
               from: `${process.env.EMAIL}`, // sender address
               to: req.body.email, // list of receivers
               subject: "Verify Email", // Subject line
               text: "reset email", // plain text body
-              html: `<b>Verify email at <a href=${process.env.VERIFY_URL}/verify?verificationToken=${result.dataValues.verificationToken.toString()}>Click Here to verify Email</a></b>`, // html body
+              html: `<b>Verify email at <a href=${
+                process.env.VERIFY_URL
+              }/verify?verificationToken=${result.dataValues.verificationToken.toString()}>Click Here to verify Email</a></b>`, // html body
             });
             return res.status(200).send({
               status: true,
@@ -208,7 +213,6 @@ exports.accountVerify = async (req, res, next) => {
           }
         } else {
           res.redirect(process.env.VERIFY_RETURN_URL_FAIL);
-
         }
       })
       .catch((err) => {
@@ -221,13 +225,10 @@ exports.accountVerify = async (req, res, next) => {
   }
 };
 
-
 exports.success = async (req, res, next) => {
   try {
     const { User } = req.db.models;
-    res.sendFile(path.join(__dirname,'..', '..', 'public', 'success.html'));
-
-   
+    res.sendFile(path.join(__dirname, "..", "..", "public", "success.html"));
   } catch (err) {
     return res
       .status(500)
@@ -237,9 +238,7 @@ exports.success = async (req, res, next) => {
 exports.fail = async (req, res, next) => {
   try {
     const { User } = req.db.models;
-    res.sendFile(path.join(__dirname,'..', '..', 'public', 'fail.html'));
-
-   
+    res.sendFile(path.join(__dirname, "..", "..", "public", "fail.html"));
   } catch (err) {
     return res
       .status(500)
@@ -364,28 +363,29 @@ exports.resetPassword = async (req, res, next) => {
   }
 };
 exports.getUser = async (req, res, next) => {
+  const { id } = req.params;
   try {
     const { User, Role } = req.db.models;
     // const userId = req?.auth?.data?.userId;
     User.findOne({
       where: {
-        id: 1,
+        id: id,
       },
-      include: [
-        {
-          model: Role,
-          required: false,
-        },
-      ],
+      // include: [
+      //   {
+      //     model: Role,
+      //     required: false,
+      //   },
+      // ],
     })
       .then(async (user) => {
         if (user) {
           // res.redirect(process.env.VERIFY_RETURN_URL_FAIL)
-          const { fullName, id, email } = user;
+          const { fullName, id, email, stripeCustomerId, userType } = user;
 
           res.status(200).send({
             status: true,
-            user: { fullName, id, email, role: user.Role },
+            user: { fullName, id, email, stripeCustomerId, userType },
           });
         } else {
           res
