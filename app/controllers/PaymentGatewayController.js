@@ -5,6 +5,8 @@ var jwt = require("jsonwebtoken");
 const validator = require("validator");
 
 const sendMail = require("../../helpers/nodeMailer");
+const { error } = require("console");
+const { response } = require("express");
 console.log("process.env.STRIPE_SECRET_KEY)", process.env.STRIPE_SECRET_KEY);
 const stripe = require("stripe")(process.env.STRIPE_SECRET_KEY); // Replace with your Stripe secret key
 
@@ -45,34 +47,40 @@ exports.createSubscription = async (req, res, next) => {
     }
 
     // Attach the payment method to the customer
-    const rest = await stripe.paymentMethods.attach(paymentMethodId, {
-      customer: customerId,
-    });
+    stripe.paymentMethods
+      .attach(paymentMethodId, {
+        customer: customerId,
+      })
+      .then((paymentMethod) => {
+        // Step 1: Attach the payment method
+        console.log("Payment method attached:", paymentMethod);
 
-    // Set the payment method as the default for the customer
-    const rest2 = await stripe.customers.update(customerId, {
-      invoice_settings: {
-        default_payment_method: paymentMethodId,
-      },
-    });
+        return stripe.customers.update(customerId, {
+          invoice_settings: {
+            default_payment_method: paymentMethodId,
+          },
+        });
+      })
+      .then((customer) => {
+        // Step 2: Update the customer with the default payment method
+        console.log("Customer updated:", customer);
 
-    // Create the subscription
-    const subscription = await stripe.subscriptions.create({
-      customer: customerId,
-      items: [{ price: priceId }],
-      default_payment_method: paymentMethodId,
-    });
-    console.log("Response of Payement Method aTTACH");
-    console.log(rest);
+        return stripe.subscriptions.create({
+          customer: customerId,
+          items: [{ price: priceId }],
+          default_payment_method: paymentMethodId,
+        });
+      })
+      .then((subscription) => {
+        // Step 3: Create a subscription
+        console.log("Subscription created:", subscription);
 
-    console.log(
-      "Response of Customer Update for the data of PaymentMethod to default"
-    );
-    console.log(rest2);
-
-    console.log("Subscription created:", subscription);
-
-    res.status(200).send({ subscription });
+        res.status(200).send({ status: true, data: subscription });
+      })
+      .catch((err) => {
+        console.error(err);
+        res.status(500).send({ status: false, error: err });
+      });
   } catch (error) {
     console.log(error);
     res.status(500).json({ error: error.message });
@@ -116,17 +124,21 @@ exports.startAutoRenewal = async (req, res) => {
       return res.status(400).json({ message: "Subscription ID is required" });
     }
 
-    const updatedSubscription = await stripe.subscriptions.update(
-      subscriptionId,
-      {
+    stripe.subscriptions
+      .update(subscriptionId, {
         cancel_at_period_end: false,
-      }
-    );
-
-    res.status(200).json({
-      message: "Auto-renewal started",
-      subscription: updatedSubscription,
-    });
+      })
+      .then((updateSubscription) => {
+        console.log(updateSubscription);
+        res.status(200).json({
+          message: "Auto-renewal started",
+          subscription: updateSubscription,
+        });
+      })
+      .catch((err) => {
+        console.log(err);
+        res.status(500).send({ status: false, error: err });
+      });
   } catch (error) {
     console.error("Error starting auto-renewal:", error);
     res
