@@ -35,7 +35,7 @@ exports.createpayment = async (req, res) => {
 };
 
 exports.createSubscription = async (req, res, next) => {
-  const { packageSubscription } = req.db.models;
+  const { packageSubscription, User } = req.db.models;
 
   try {
     const { priceId, paymentMethodId, customerId, userId, packageId } =
@@ -84,7 +84,14 @@ exports.createSubscription = async (req, res, next) => {
             packageId: packageId,
             PurchasedsubscriptionId_Stripe: subscription.id,
           })
-          .then((resp) => {
+          .then(async (resp) => {
+            // const userType = packageId === 1 ? "premium" : packageId === 2 ? "platinum" : packageId === 3 ? "free"
+            // let data  ={
+
+            // }
+            // const [updatedRows] = await User.update( {
+            //   where: { userId },
+            // });
             res.status(200).send({
               status: true,
               message: "Subscription Purchased Successfully",

@@ -57,10 +57,10 @@ module.exports = (sequelize, DataTypes) => {
         type: DataTypes.STRING,
         allowNull: true,
       },
-      roleName: {
+      userType: {
         type: DataTypes.STRING,
         allowNull: false,
-        defaultValue: "user", // Default value is 'user'
+        defaultValue: "free", // Default value is 'user'
       },
       resetTokenExpiry: {
         type: DataTypes.DATE,
