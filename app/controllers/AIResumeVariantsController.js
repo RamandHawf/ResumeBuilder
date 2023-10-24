@@ -20,20 +20,19 @@ exports.createAiResumeVariant = async (req, res) => {
 
   console.log(req.body);
   try {
-    const resume = await AIresume.findByPk(aiResumeId);
-    if (!resume) {
-      return res.status(404).send({
-        status: false,
-        message: "AI resume not found in your Record .",
-      });
-    } else {
+    const [ai_resumedata, ai_resume_variant_row_count] = await Promise.all([
+      AIresume.findByPk(aiResumeId),
+      aiResumeVariants.count({ where: { aiResumeId } }),
+    ]);
+    if (
+      ai_resumedata?.dataValues?.AIresumeDetail &&
+      ai_resume_variant_row_count < 3
+    ) {
       try {
-        // console.log("Umer usman");
-        // console.log(resume.dataValues.AIresumeDetail);
-        // const jsonString1 = JSON.parse(resume.dataValues.AIresumeDetail);
-        // console.log("First One", jsonString1);
-
-        fs.writeFileSync("json_resume.json", resume.dataValues.AIresumeDetail);
+        fs.writeFileSync(
+          "json_resume.json",
+          ai_resumedata.dataValues.AIresumeDetail
+        );
 
         const data = new FormData();
         data.append("json_resume", fs.createReadStream("json_resume.json"));
@@ -54,17 +53,9 @@ exports.createAiResumeVariant = async (req, res) => {
           .request(config)
           .then((response) => {
             try {
-              // console.log("Name is name");
-              // res.status(200).send(response.data[]);
-
               console.log(response);
               const decodedBuffer = Buffer.from(response.data[0], "base64");
               console.log("Name is khan");
-              // fs.writeFileSync(
-              //   `AI-Resume-${userDataId}-${Date.now()}.pdf`,
-              //   response.data[0]
-              // );
-              // console.log(JSON.stringify(response.data));
               const params = {
                 Bucket: process.env.S3BUCKET_NAME,
                 Key: `AI-Variant-Resume-${aiResumeId}-${Date.now()}.pdf`, // Use the original filename for the S3 object
@@ -78,7 +69,6 @@ exports.createAiResumeVariant = async (req, res) => {
                   });
                 }
                 if (data?.Location) {
-                  console.log("Cloud Storage");
                   aiResumeVariants
                     .create({
                       aiResumeId: aiResumeId,
@@ -118,6 +108,11 @@ exports.createAiResumeVariant = async (req, res) => {
         console.log("Error", err);
         res.status(500).send({ status: false, error: err });
       }
+    } else {
+      return res.status(404).send({
+        status: false,
+        message: "AI resume not found in your Record .",
+      });
     }
   } catch (error) {
     console.error("Error creating aiResumeVariant:", error);

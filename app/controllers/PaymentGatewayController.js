@@ -35,12 +35,15 @@ exports.createpayment = async (req, res) => {
 };
 
 exports.createSubscription = async (req, res, next) => {
+  const { packageSubscription } = req.db.models;
+
   try {
-    const { priceId, paymentMethodId, customerId } = req.body;
+    const { priceId, paymentMethodId, customerId, userId, packageId } =
+      req.body;
 
     console.log(req.body);
 
-    if (!priceId || !paymentMethodId || !customerId) {
+    if (!priceId || !paymentMethodId || !customerId || !userId || !packageId) {
       return res
         .status(400)
         .json({ message: "Provide all Details--Provided Details are empty" });
@@ -74,8 +77,25 @@ exports.createSubscription = async (req, res, next) => {
       .then((subscription) => {
         // Step 3: Create a subscription
         console.log("Subscription created:", subscription);
-
-        res.status(200).send({ status: true, data: subscription });
+        packageSubscription
+          .create({
+            userId: userId,
+            subsciptionStatus: subscription.status,
+            packageId: packageId,
+            PurchasedsubscriptionId_Stripe: subscription.id,
+          })
+          .then((resp) => {
+            res.status(200).send({
+              status: true,
+              message: "Subscription Purchased Successfully",
+              data: resp,
+            });
+          })
+          .catch((err) => {
+            res
+              .status(500)
+              .send({ message: "Internal Server Error", error: err });
+          });
       })
       .catch((err) => {
         console.error(err);

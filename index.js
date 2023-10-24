@@ -60,6 +60,7 @@ app.use(
       "/api/test",
       "/api/auth/success",
       "/api/auth/fail",
+      "/api/gateway/create-subscription",
       "api//getAllProductDetails",
     ],
   })
