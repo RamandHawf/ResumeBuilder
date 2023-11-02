@@ -6,7 +6,11 @@ const fs = require("fs");
 // const fileType = require("file-type");
 const FormData = require("form-data");
 // const s3 = require("./../../config/config"); // Adjust the path to match the location of your 's3Config.js' file
-
+const s3 = new AWS.S3({
+  accessKeyId: process.env.S3BUCKET_ACCESS_KEYID,
+  secretAccessKey: process.env.S3BUCKET_SECRETACCESSKEY,
+  region: process.env.S3BUCKET_REGION,
+});
 exports.createAIresume = async (req, res, next) => {
   const { AIresume } = req.db.models;
   const { ResumeDetail } = req.db.models;
@@ -42,8 +46,8 @@ exports.createAIresume = async (req, res, next) => {
         const jsonString2 = JSON.parse(resumeData1.dataValues.resumeDetail);
         console.log("First One", jsonString1);
         console.log("Second One", jsonString2);
-        fs.writeFileSync("job_desc.json", job_desc);
-        fs.writeFileSync("json_resume.json", json_resume);
+        // fs.writeFileSync("job_desc.json", job_desc);
+        // fs.writeFileSync("json_resume.json", json_resume);
         const data = new FormData();
         data.append("job_desc", fs.createReadStream("job_desc.json"));
         data.append("json_resume", fs.createReadStream("json_resume.json"));
