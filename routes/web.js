@@ -6,6 +6,6 @@ router.get("/ping", (req, res) => {
   res.status(200).send("Server is accessable !!");
 });
 
-router.get("/user/:id", AuthController.getUser);
+router.get("/user", AuthController.getUser);
 
 module.exports = router;

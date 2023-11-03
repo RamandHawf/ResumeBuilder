@@ -364,12 +364,15 @@ exports.resetPassword = async (req, res, next) => {
 };
 exports.getUser = async (req, res, next) => {
   const { id } = req.params;
+  const createdBy = req?.auth?.data?.userId;
+  // console.log(createdBy);
   try {
     const { User, Role } = req.db.models;
+
     // const userId = req?.auth?.data?.userId;
     User.findOne({
       where: {
-        id: id,
+        id: createdBy,
       },
       // include: [
       //   {
