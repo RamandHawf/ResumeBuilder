@@ -1,15 +1,15 @@
 const axios = require("axios");
 const { json } = require("body-parser");
 const FormData = require("form-data");
-let data = new FormData();
+const http = require("http");
 
 // In your controllers.js or where your CRUD functions are defined:
 exports.createJobDetail = async (req, res, next) => {
   const { jobDetail } = req.db.models;
   const { jobdetaillink, userDataId } = req.body;
 
-  console.log(req.body);
   try {
+    console.log(req.body);
     if (!jobdetaillink || !userDataId) {
       res
         .status(200)
@@ -17,6 +17,8 @@ exports.createJobDetail = async (req, res, next) => {
     }
 
     if (jobdetaillink && userDataId) {
+      console.log("fIRST");
+      let data = new FormData();
       data.append("link", jobdetaillink);
       data.append("username", process.env.USERNAME_INDEED);
       data.append("password", process.env.PASSWORD_INDEED);
@@ -31,24 +33,41 @@ exports.createJobDetail = async (req, res, next) => {
         },
         data: data,
       };
-
+      console.log("sECOND");
       axios
         .request(config)
         .then(async (response) => {
-          console.log(response);
+          console.log("THIRD");
+          console.log("response", response);
+          console.log("for data", response.data);
+          console.log("for error", response.data.error);
           let resps = JSON.stringify(response.data);
+
+          console.log(resps);
+          if (!response.data) {
+            console.log("Fourth");
+            res.status(200).send({
+              status: true,
+              message: "Scrapping Failed",
+              response: response,
+            });
+          }
           // console.log("response", JSON.parse(resps));
           if (response) {
+            console.log("Fifth");
             if (response.data.error) {
+              console.log("Sixth");
               console.log("Error:", response.data.error);
               return res
-                .status(500)
-                .send({ status: false, error: response.data.error });
+                .status(400)
+                .json({ status: false, error: response.data });
             } else {
               if (response.data) {
+                console.log(":Seventh");
                 console.log("Data Received");
 
                 try {
+                  console.log("Eigth");
                   const newJobDetail = await jobDetail.create({
                     jobdetaillink: jobdetaillink,
                     jobdetail: resps,
@@ -60,6 +79,7 @@ exports.createJobDetail = async (req, res, next) => {
                     jobDetail: newJobDetail,
                   });
                 } catch (err) {
+                  console.log("Ninth");
                   console.error("Error creating job detail:", err);
                   return res.status(500).json({
                     status: false,
@@ -69,6 +89,7 @@ exports.createJobDetail = async (req, res, next) => {
               }
             }
           } else {
+            console.log("Tenth");
             console.error("Empty or undefined response.");
             return res.status(500).json({
               status: false,
@@ -77,8 +98,28 @@ exports.createJobDetail = async (req, res, next) => {
           }
         })
         .catch((error) => {
-          console.log(error);
+          console.log("Eleventh");
+          if (error.code === "ETIMEDOUT") {
+            console.error("Request to AI server timed out:", error);
+            res.status(500).json({
+              status: false,
+              message: "Request to AI server timed out.",
+              error: error,
+            });
+          } else {
+            console.error("Axios request failed:", error);
+            res.status(500).json({
+              status: false,
+              message: "Request to AI server failed.",
+              error: error,
+            });
+          }
         });
+    } else {
+      res.send({
+        status: false,
+        message: "Provide Accurate Detail like id and Job Link",
+      });
     }
   } catch (error) {
     console.error("Error creating job detail:", error);

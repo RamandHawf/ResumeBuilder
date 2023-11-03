@@ -203,8 +203,9 @@ exports.updateSubscription = async (req, res) => {
           items: [{ price: newPriceId }],
         }
       );
-
-      res.status(200).json(updatedSubscription);
+      updatedSubscription
+        ? res.status(400).send({ message: "Not Updated Successfully" })
+        : res.status(200).json(updatedSubscription);
     }
   } catch (error) {
     res.status(500).json({ error: error.message });
