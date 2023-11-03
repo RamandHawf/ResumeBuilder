@@ -1,4 +1,5 @@
 const axios = require("axios");
+const { json } = require("body-parser");
 const FormData = require("form-data");
 let data = new FormData();
 
@@ -22,7 +23,7 @@ exports.createJobDetail = async (req, res, next) => {
 
       let config = {
         method: "post",
-        timeout: 15000,
+        // timeout: 15000,
         maxBodyLength: Infinity,
         url: `${process.env.AI_URL}/get_jobdesc`,
         headers: {
@@ -34,34 +35,37 @@ exports.createJobDetail = async (req, res, next) => {
       axios
         .request(config)
         .then(async (response) => {
+          console.log(response);
           let resps = JSON.stringify(response.data);
-          console.log("response", resps);
-          if (resps) {
-            if (resps.error) {
-              console.log("Error:", resps.error);
+          // console.log("response", JSON.parse(resps));
+          if (response) {
+            if (response.data.error) {
+              console.log("Error:", response.data.error);
               return res
                 .status(500)
-                .send({ status: false, error: resps.error });
+                .send({ status: false, error: response.data.error });
             } else {
-              console.log("Data Received");
+              if (response.data) {
+                console.log("Data Received");
 
-              try {
-                const newJobDetail = await jobDetail.create({
-                  jobdetaillink: jobdetaillink,
-                  jobdetail: resps,
-                  userDataId: userDataId,
-                });
-                return res.status(201).json({
-                  status: true,
-                  message: "Job detail created successfully.",
-                  jobDetail: newJobDetail,
-                });
-              } catch (err) {
-                console.error("Error creating job detail:", err);
-                return res.status(500).json({
-                  status: false,
-                  error: "Failed to create job detail.",
-                });
+                try {
+                  const newJobDetail = await jobDetail.create({
+                    jobdetaillink: jobdetaillink,
+                    jobdetail: resps,
+                    userDataId: userDataId,
+                  });
+                  return res.status(201).json({
+                    status: true,
+                    message: "Job detail created successfully.",
+                    jobDetail: newJobDetail,
+                  });
+                } catch (err) {
+                  console.error("Error creating job detail:", err);
+                  return res.status(500).json({
+                    status: false,
+                    error: "Failed to create job detail.",
+                  });
+                }
               }
             }
           } else {
