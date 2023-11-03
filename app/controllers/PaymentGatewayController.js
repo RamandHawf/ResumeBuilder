@@ -196,16 +196,16 @@ exports.updateSubscription = async (req, res) => {
       res
         .status(400)
         .send({ message: "Provide ProductPriceId and SubscriptionId!" });
+    } else {
+      const updatedSubscription = await stripe.subscriptions.update(
+        subscriptionId,
+        {
+          items: [{ price: newPriceId }],
+        }
+      );
+
+      res.status(200).json(updatedSubscription);
     }
-
-    const updatedSubscription = await stripe.subscriptions.update(
-      subscriptionId,
-      {
-        items: [{ price: newPriceId }],
-      }
-    );
-
-    res.status(200).json(updatedSubscription);
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
@@ -216,11 +216,13 @@ exports.cancelSubscription = async (req, res) => {
     const { subscriptionId } = req.body;
     if (!subscriptionId) {
       res.status(400).send({ message: "Provide Subscription Id!" });
+    } else {
+      const canceledSubscription = await stripe.subscriptions.del(
+        subscriptionId
+      );
+
+      res.status(200).json({ message: "Subscription canceled successfully" });
     }
-
-    const canceledSubscription = await stripe.subscriptions.del(subscriptionId);
-
-    res.status(200).json({ message: "Subscription canceled successfully" });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
