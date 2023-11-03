@@ -23,7 +23,7 @@ exports.createJobDetail = async (req, res, next) => {
       let config = {
         method: "post",
         maxBodyLength: Infinity,
-        url: "http://localhost:5000/get_jobdesc",
+        url: `${process.env.AI_URL}/get_jobdesc`,
         headers: {
           ...data.getHeaders(),
         },

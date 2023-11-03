@@ -52,6 +52,7 @@ app.use(
     algorithms: ["HS256"],
   }).unless({
     path: [
+      "/api/ping",
       "/api/auth/sign-up",
       "/api/auth/login",
       "/api/auth/reset-password",
