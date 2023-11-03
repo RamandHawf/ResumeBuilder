@@ -36,15 +36,14 @@ exports.createJobDetail = async (req, res, next) => {
         .then(async (response) => {
           let resps = JSON.stringify(response.data);
           console.log("response", resps);
-          if (response) {
-            if (response.data.error) {
-              console.log("Error:", response.data.error);
+          if (resps) {
+            if (resps.error) {
+              console.log("Error:", resps.error);
               return res
                 .status(500)
-                .send({ status: false, error: response.data.error });
+                .send({ status: false, error: resps.error });
             } else {
               console.log("Data Received");
-              const resps = JSON.stringify(response.data);
 
               try {
                 const newJobDetail = await jobDetail.create({
