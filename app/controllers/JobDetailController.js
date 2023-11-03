@@ -22,6 +22,7 @@ exports.createJobDetail = async (req, res, next) => {
 
       let config = {
         method: "post",
+        timeout: 15000,
         maxBodyLength: Infinity,
         url: `${process.env.AI_URL}/get_jobdesc`,
         headers: {
