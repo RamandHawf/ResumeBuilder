@@ -33,16 +33,15 @@ exports.createJobDetail = async (req, res, next) => {
       axios
         .request(config)
         .then(async (response) => {
+          let resps = JSON.stringify(response.data);
           // console.log(response);
           if (response?.data?.error) {
             console.log("Error");
             res
               .status(500)
               .send({ status: false, error: response?.data?.error });
-          }
-          if (response?.data) {
+          } else {
             console.log("data Received");
-            let resps = JSON.stringify(response.data);
 
             const newJobDetail = await jobDetail.create({
               jobdetaillink: jobdetaillink,
