@@ -8,7 +8,7 @@ const StripeMidMan = require("../app/middlewares/StripeMaster");
 
 router.post(
   "/create-airesumevariants",
-  StripeMidMan.checkSubscriptionValidity,
+  // StripeMidMan.checkSubscriptionValidity,
   aiResumeVariantsController.createAiResumeVariant
 );
 router.get(

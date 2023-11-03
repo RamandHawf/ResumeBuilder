@@ -14,7 +14,7 @@ const StripeMidMan = require("./../app/middlewares/StripeMaster");
 
 router.post(
   "/create-airesume",
-  StripeMidMan.checkSubscriptionValidity,
+  // StripeMidMan.checkSubscriptionValidity,
   aiResumeController.createAIresume
 );
 
