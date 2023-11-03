@@ -34,9 +34,11 @@ exports.createJobDetail = async (req, res, next) => {
         .request(config)
         .then(async (response) => {
           // console.log(response);
-          if (response?.error) {
+          if (response?.data?.error) {
             console.log("Error");
-            res.status(500).send({ status: false, error: response.error });
+            res
+              .status(500)
+              .send({ status: false, error: response?.data?.error });
           }
           if (response?.data) {
             console.log("data Received");

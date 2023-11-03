@@ -121,19 +121,19 @@ exports.stopAutoRenewal = async (req, res) => {
 
     if (!subscriptionId) {
       return res.status(400).json({ message: "Subscription ID is required" });
+    } else {
+      const canceledSubscription = await stripe.subscriptions.update(
+        subscriptionId,
+        {
+          cancel_at_period_end: true,
+        }
+      );
+
+      res.status(200).json({
+        message: "Auto-renewal stopped",
+        subscription: canceledSubscription,
+      });
     }
-
-    const canceledSubscription = await stripe.subscriptions.update(
-      subscriptionId,
-      {
-        cancel_at_period_end: true,
-      }
-    );
-
-    res.status(200).json({
-      message: "Auto-renewal stopped",
-      subscription: canceledSubscription,
-    });
   } catch (error) {
     console.error("Error stopping auto-renewal:", error);
     res
@@ -149,23 +149,23 @@ exports.startAutoRenewal = async (req, res) => {
 
     if (!subscriptionId) {
       return res.status(400).json({ message: "Subscription ID is required" });
-    }
-
-    stripe.subscriptions
-      .update(subscriptionId, {
-        cancel_at_period_end: false,
-      })
-      .then((updateSubscription) => {
-        console.log(updateSubscription);
-        res.status(200).json({
-          message: "Auto-renewal started",
-          subscription: updateSubscription,
+    } else {
+      stripe.subscriptions
+        .update(subscriptionId, {
+          cancel_at_period_end: false,
+        })
+        .then((updateSubscription) => {
+          console.log(updateSubscription);
+          res.status(200).json({
+            message: "Auto-renewal started",
+            subscription: updateSubscription,
+          });
+        })
+        .catch((err) => {
+          console.log(err);
+          res.status(500).send({ status: false, error: err });
         });
-      })
-      .catch((err) => {
-        console.log(err);
-        res.status(500).send({ status: false, error: err });
-      });
+    }
   } catch (error) {
     console.error("Error starting auto-renewal:", error);
     res
