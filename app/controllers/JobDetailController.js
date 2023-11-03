@@ -34,24 +34,41 @@ exports.createJobDetail = async (req, res, next) => {
         .request(config)
         .then(async (response) => {
           let resps = JSON.stringify(response.data);
-          // console.log(response);
-          if (response?.data?.error) {
-            console.log("Error");
-            res
-              .status(500)
-              .send({ status: false, error: response?.data?.error });
-          } else {
-            console.log("data Received");
+          console.log("response", resps);
+          if (response) {
+            if (response.data.error) {
+              console.log("Error:", response.data.error);
+              return res
+                .status(500)
+                .send({ status: false, error: response.data.error });
+            } else {
+              console.log("Data Received");
+              const resps = JSON.stringify(response.data);
 
-            const newJobDetail = await jobDetail.create({
-              jobdetaillink: jobdetaillink,
-              jobdetail: resps,
-              userDataId: userDataId,
-            });
-            return res.status(201).json({
-              status: true,
-              message: "Job detail created successfully.",
-              jobDetail: newJobDetail,
+              try {
+                const newJobDetail = await jobDetail.create({
+                  jobdetaillink: jobdetaillink,
+                  jobdetail: resps,
+                  userDataId: userDataId,
+                });
+                return res.status(201).json({
+                  status: true,
+                  message: "Job detail created successfully.",
+                  jobDetail: newJobDetail,
+                });
+              } catch (err) {
+                console.error("Error creating job detail:", err);
+                return res.status(500).json({
+                  status: false,
+                  error: "Failed to create job detail.",
+                });
+              }
+            }
+          } else {
+            console.error("Empty or undefined response.");
+            return res.status(500).json({
+              status: false,
+              error: "Empty or undefined response from the server.",
             });
           }
         })
