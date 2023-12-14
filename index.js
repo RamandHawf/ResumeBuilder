@@ -61,6 +61,7 @@ app.use(
       "/api/test",
       "/api/auth/success",
       "/api/auth/fail",
+      "/api/auth/resendVerificationEmail",
       "/api/gateway/create-subscription",
       "api//getAllProductDetails",
     ],

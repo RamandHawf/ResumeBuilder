@@ -52,7 +52,9 @@ exports.createResume = async (req, res, next) => {
       axios
         .request(config)
         .then(async (response) => {
+          console.log("response from server", response);
           let resps = JSON.stringify(response.data);
+          console.log(resps);
           const newResume = await ResumeDetail.create({
             resumeDetail: resps,
             userDataId: userDataId,

@@ -6,6 +6,8 @@ const validator = require("validator");
 console.log("process.env.STRIPE_SECRET_KEY ", process.env.STRIPE_SECRET_KEY);
 const stripe = require("stripe")(process.env.STRIPE_SECRET_KEY);
 const sendMail = require("../../helpers/nodeMailer");
+const { error } = require("console");
+const { resolveSoa } = require("dns");
 
 exports.login = (req, res, next) => {
   try {
@@ -115,6 +117,70 @@ exports.logout = (req, res, next) => {
   }
 };
 
+const HTTP_STATUS = {
+  NOT_FOUND: 404,
+  OK: 200,
+  INTERNAL_SERVER_ERROR: 500,
+};
+
+exports.resendVerificationEmail = async (req, res, next) => {
+  try {
+    const { User } = req.db.models;
+    const { email } = req.body;
+    console.table(email)
+    const user = await findUserByEmail(User, email);
+    console.log(user)
+    if (!user) {
+      return res.status(HTTP_STATUS.NOT_FOUND).json({ message: "Not Found User", data: user });
+    }
+
+    // console.log(user?.isVerified === true)
+
+
+    if (user.isVerified === true) {
+      return res.status(HTTP_STATUS.OK).json({ message: "User is already verified" });
+    }
+    else {
+
+      const token = await generateVerificationToken(email);
+      // console.log(token)
+      await user.update({
+        verificationToken: token,
+      });
+      await sendMail({
+        from: process.env.EMAIL,
+        to: email,
+        subject: "Verify Email",
+        text: "reset email",
+        html: `<b>Verify email at <a href=${process.env.VERIFY_URL}/verify?verificationToken=${token}>Click Here to verify Email</a></b>`,
+      });
+
+      return res.status(HTTP_STATUS.OK).json({ message: "Email Sent Successfully. Check your Mailbox", url: `${process.env.VERIFY_URL}/verify?verificationToken=${token}` });
+    }
+
+  } catch (error) {
+    res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({ status: false, error: error.message });
+  }
+};
+
+async function findUserByEmail(model, email) {
+
+  return await model.findOne({
+    where: {
+      email,
+    },
+  });
+}
+
+async function generateVerificationToken(email) {
+  return await jwt.sign(
+    { data: { email } },
+    process.env.JWT_VERIFY_TOKEN,
+    { expiresIn: process.env.VERIFY_TOKEN_EXPIRY }
+  );
+}
+
+
 exports.signUp = (req, res, next) => {
   const { User } = req.db.models;
   console.log(User);
@@ -161,9 +227,9 @@ exports.signUp = (req, res, next) => {
               to: req.body.email, // list of receivers
               subject: "Verify Email", // Subject line
               text: "reset email", // plain text body
-              html: `<b>Verify email at <a href=${
-                process.env.VERIFY_URL
-              }/verify?verificationToken=${result.dataValues.verificationToken.toString()}>Click Here to verify Email</a></b>`, // html body
+              html: `<b>Verify email at <a href=${process.env.VERIFY_URL
+                }/verify?verificationToken=${result.dataValues.verificationToken.toString()}>Click Here to verify Email</a></b>`,
+              // html body
             });
             return res.status(200).send({
               status: true,
@@ -187,32 +253,48 @@ exports.signUp = (req, res, next) => {
 };
 
 exports.accountVerify = async (req, res, next) => {
+
+  console.log("Your Data is inside")
   try {
     const { User } = req.db.models;
 
     const { verificationToken } = req.query;
+
+    console.log("Inside Verificaton Token")
+    console.log(verificationToken)
     var decoded = await jwt.verify(
       verificationToken,
       process.env.JWT_VERIFY_TOKEN
     );
+
+    console.log(decoded)
     User.findOne({
       where: {
         email: decoded.data.email,
       },
     })
       .then(async (user) => {
+        console.log("User us inside", user);
         if (user && user.dataValues.verificationToken === verificationToken) {
           let result = await user.update({
             isVerified: true,
             verificationToken: null,
           });
           if (result) {
+            console.log("one")
             res.redirect(process.env.VERIFY_RETURN_URL_SUCCESS);
           } else {
+            console.log("two")
+
             res.redirect(process.env.VERIFY_RETURN_URL_FAIL);
           }
         } else {
+          console.log("three y")
+
+          console.log("Count")
+          console.log(process.env.VERIFY_RETURN_URL_FAIL)
           res.redirect(process.env.VERIFY_RETURN_URL_FAIL);
+
         }
       })
       .catch((err) => {
