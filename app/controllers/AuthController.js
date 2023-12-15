@@ -127,9 +127,9 @@ exports.resendVerificationEmail = async (req, res, next) => {
   try {
     const { User } = req.db.models;
     const { email } = req.body;
-    console.table(email)
+    // console.table(email)
     const user = await findUserByEmail(User, email);
-    console.log(user)
+    // console.log(user)
     if (!user) {
       return res.status(HTTP_STATUS.NOT_FOUND).json({ message: "Not Found User", data: user });
     }
@@ -254,46 +254,46 @@ exports.signUp = (req, res, next) => {
 
 exports.accountVerify = async (req, res, next) => {
 
-  console.log("Your Data is inside")
+  // console.log("yes and no")
   try {
     const { User } = req.db.models;
 
     const { verificationToken } = req.query;
-
-    console.log("Inside Verificaton Token")
-    console.log(verificationToken)
     var decoded = await jwt.verify(
       verificationToken,
       process.env.JWT_VERIFY_TOKEN
     );
 
-    console.log(decoded)
+
+
+
+    // console.log(decoded, "Ndde mailer")
     User.findOne({
       where: {
         email: decoded.data.email,
       },
     })
       .then(async (user) => {
-        console.log("User us inside", user);
+
         if (user && user.dataValues.verificationToken === verificationToken) {
           let result = await user.update({
             isVerified: true,
             verificationToken: null,
           });
           if (result) {
-            console.log("one")
+            // console.log("one")
             res.redirect(process.env.VERIFY_RETURN_URL_SUCCESS);
           } else {
-            console.log("two")
+            // console.log("two")
 
             res.redirect(process.env.VERIFY_RETURN_URL_FAIL);
           }
         } else {
-          console.log("three y")
+          // console.log("three y")
 
-          console.log("Count")
-          console.log(process.env.VERIFY_RETURN_URL_FAIL)
-          res.redirect(process.env.VERIFY_RETURN_URL_FAIL);
+          // console.log("Count")
+          // console.log(process.env.VERIFY_RETURN_URL_FAIL)
+          res.redirect(process.env.VERIFY_RETURN_URL_VERIFIED);
 
         }
       })
@@ -307,6 +307,15 @@ exports.accountVerify = async (req, res, next) => {
   }
 };
 
+exports.verified = async (req, res, next) => {
+  try {
+
+    res.sendFile(path.join(__dirname, "..", "..", "public", "success1.html"));
+
+  } catch (error) {
+    res.status(500).send({ status: false, message: "Internal Server Error" })
+  }
+}
 exports.success = async (req, res, next) => {
   try {
     const { User } = req.db.models;

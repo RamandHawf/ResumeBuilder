@@ -10,6 +10,8 @@ router.post('/logout', AuthController.logout);
 router.get('/verify', AuthController.accountVerify);
 router.get('/fail', AuthController.fail);
 router.get('/success', AuthController.success);
+router.get('/verified', AuthController.verified);
+
 
 // router.get('/sign-up', AuthController.signUpPage);
 router.post('/sign-up', AuthController.signUp);
