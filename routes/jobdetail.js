@@ -5,7 +5,7 @@ const jobeDetailController = require("../app/controllers/JobDetailController");
 
 // router.get('/login', jobeDetailController.loginPage);
 router.post("/createJobDetail", jobeDetailController.createJobDetail);
-router.get("/getJobdDetailById/:id", jobeDetailController.getJobDetailById);
+router.get("/getJobDetailById/:id", jobeDetailController.getJobDetailById);
 router.get("/getAllJobDetail", jobeDetailController.getAllJobDetail);
 
 router.put("/updateJobDetail/:id", jobeDetailController.updateJobDetail);

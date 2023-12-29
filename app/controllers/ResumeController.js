@@ -30,14 +30,17 @@ exports.createResume = async (req, res, next) => {
         .status(400)
         .json({ message: "Only PDF or DOC files are allowed." });
     }
+    console.log("Flow Start")
 
     if (req.file) {
+      console.log("File Inside")
       let data = new FormData();
       console.log(req.file.buffer);
       data.append("file", req.file.buffer, {
         filename: req.file.originalname,
         contentType: req.file.mimetype,
       });
+
 
       let config = {
         method: "post",
@@ -48,11 +51,12 @@ exports.createResume = async (req, res, next) => {
         },
         data: data,
       };
+      console.log(config)
 
       axios
         .request(config)
         .then(async (response) => {
-          // console.log("response from server", response);
+          console.log("response from server", response);
           let resps = JSON.stringify(response.data);
           // console.log(resps);
           const newResume = await ResumeDetail.create({
@@ -67,7 +71,9 @@ exports.createResume = async (req, res, next) => {
           });
         })
         .catch((error) => {
-          // console.log(error);
+          console.log(error);
+          res.status(500).send({ message: "Internal Server Error", error: error })
+
         });
     } else {
       res.status(500).send({ message: "Internal Server Error" });

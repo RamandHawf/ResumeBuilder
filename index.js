@@ -88,7 +88,7 @@ app.use("/api/gateway", PaymentGatewayRoutes);
 app.use("/api/airesume-variants", aiResumeVariants);
 
 sequelize
-  //.sync({ force: true })
+  // .sync({ force: true })
   .sync({ alter: true })
   // .sync()
   .then(() => {
