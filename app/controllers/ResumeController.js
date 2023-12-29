@@ -53,10 +53,10 @@ exports.createResume = async (req, res, next) => {
         userId: createdBy,
       });
 
-      return res.status(201).send({
+      return res.status(200).send({
         status: true,
         message: "ResumeDetail created successfully.",
-        resume: newResume.toJSON(),
+        resume: newResume,
       });
     }
     else {
