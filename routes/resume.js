@@ -11,20 +11,20 @@ const storage = multer.memoryStorage();
 const upload = multer({ storage: storage });
 
 router.post(
-  "/parse_user_resume",
+  "/createResumeData",
   upload.single("file"),
   resumeController.createResume
 );
 
 // Get resume by ID
-router.get("/getallresumedata", resumeController.getallresume);
+router.get("/getAllResumeData", resumeController.getallresume);
 
-router.get("/getresumedatabyid/:id", resumeController.getResumeById);
+router.get("/getResumeDataById/:id", resumeController.getResumeById);
 
 // Update resume by ID
-router.put("/updateresumedata/:id", resumeController.updateResumeById);
+router.put("/updateResumeData/:id", resumeController.updateResumeById);
 
 // Delete resume by ID
-router.delete("/deleteresume/:id", resumeController.deleteResumeById);
+router.delete("/deleteResume/:id", resumeController.deleteResumeById);
 
 module.exports = router;

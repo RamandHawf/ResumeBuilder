@@ -14,11 +14,14 @@ router.get('/verified', AuthController.verified);
 
 
 // router.get('/sign-up', AuthController.signUpPage);
-router.post('/sign-up', AuthController.signUp);
+router.post('/signUp', AuthController.signUp);
 // router.get('/forgot-password', AuthController.forgotPasswordPage);
-router.post('/forgot-password', AuthController.forgotPassword);
-router.post('/reset-password', AuthController.resetPassword);
+router.post('/forgotPassword', AuthController.forgotPassword);
+router.post('/resetPassword', AuthController.resetPassword);
 router.post('/resendVerificationEmail', AuthController.resendVerificationEmail);
+router.get('/stripepaymentsuccess', AuthController.paymentsuccessurl);
+router.get('/stripepaymentfailure', AuthController.paymentfailureurl);
+
 
 
 

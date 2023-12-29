@@ -13,12 +13,12 @@ const StripeMidMan = require("./../app/middlewares/StripeMaster");
 //
 
 router.post(
-  "/create-airesume",
+  "/createAiResume",
   // StripeMidMan.checkSubscriptionValidity,
   aiResumeController.createAIresume
 );
 
-router.get("/getairesume/:id", aiResumeController.getAIresumeById);
+router.get("/getAiResume/:id", aiResumeController.getAIresumeById);
 
 router.get("/getAllAiResume", aiResumeController.getAllAIresume);
 

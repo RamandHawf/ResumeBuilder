@@ -1,11 +1,12 @@
 const express = require("express");
 const router = express.Router();
 const paymentController = require("../app/controllers/PaymentGatewayController");
-
-router.post("/create-subscription", paymentController.createSubscription);
-router.put("/stop-autorenewal-subscription", paymentController.stopAutoRenewal);
+//For hosted Links
+router.post("/createPayment", paymentController.createpayment);
+router.post("/createSubscription", paymentController.createSubscription);
+router.put("/stopAutoRenewalSubscription", paymentController.stopAutoRenewal);
 router.put(
-  "/start-autorenewal-subscription",
+  "/startAutoRenewalSubscription",
   paymentController.startAutoRenewal
 );
 router.get("/getAllProductDetails", paymentController.getAllProductDetails);

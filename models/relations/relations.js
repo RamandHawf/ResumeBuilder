@@ -13,20 +13,20 @@ module.exports = function (sequelize, DataTypes) {
 
   Role.hasMany(User, { foreignKey: "role_id" });
   User.belongsTo(Role, { foreignKey: "role_id" });
-  UserData.hasMany(AIresume, { foreignKey: "userDataId" });
-  AIresume.belongsTo(UserData, { foreignKey: "userDataId" });
+  User.hasMany(AIresume, { foreignKey: "userId" });
+  AIresume.belongsTo(User, { foreignKey: "userId" });
 
-  UserData.hasMany(Resume, { foreignKey: "userDataId" });
-  Resume.belongsTo(UserData, { foreignKey: "userDataId" });
+  User.hasMany(Resume, { foreignKey: "userId" });
+  Resume.belongsTo(User, { foreignKey: "userId" });
 
-  UserData.hasMany(jobDetail, { foreignKey: "userDataId" });
-  jobDetail.belongsTo(UserData, { foreignKey: "userDataId" });
+  User.hasMany(jobDetail, { foreignKey: "userId" });
+  jobDetail.belongsTo(User, { foreignKey: "userId" });
 
   AIresume.hasMany(aiResumeVariants, { foreignKey: "aiReumeId" });
   aiResumeVariants.belongsTo(AIresume, { foreignKey: "aiResumeId" });
 
-  User.hasOne(UserData, { foreignKey: "userId" });
-  UserData.belongsTo(User, { foreignKey: "userId" });
+  // User.hasOne(UserData, { foreignKey: "userId" });
+  // UserData.belongsTo(User, { foreignKey: "userId" });
 
   User.hasMany(models.packageSubscription, {
     foreignKey: "userId", // The foreign key in the associated model (Profile)

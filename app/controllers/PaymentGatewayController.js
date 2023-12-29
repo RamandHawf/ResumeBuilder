@@ -12,38 +12,60 @@ const stripe = require("stripe")(process.env.STRIPE_SECRET_KEY); // Replace with
 
 exports.createpayment = async (req, res) => {
   try {
-    const { priceId } = req.body;
-    const session = await stripe.checkout.sessions.create({
-      payment_method_types: ["card"], // Payment methods allowed (e.g., card)
-      line_items: [
-        {
-          // TODO: replace this with the `price` of the product you want to sell
-          // price: '{{PRICE_ID}}',
-          price: priceId,
-          quantity: 1,
-        },
-      ],
-      mode: "subscription", // 'payment' or 'subscription'
-      success_url: "http://localhost:3000/success", // Redirect URL after successful payment
-      cancel_url: "http://localhost:3000/cancel", // Redirect URL if payment is canceled
-    });
+    const { User } = req.db.models;
 
-    res.json({ id: session.url });
+    const { priceId } = req.body;
+    const createdBy = req?.auth?.data?.userId;
+    console.log(createdBy)
+
+    const userdata = await User.findOne({
+      where: {
+        id: createdBy,
+      },
+    });
+    if (!userdata.dataValues.stripeCustomerId) {
+      res.status(200).send({ message: "Your Stripe CustomerId Does Not exist" })
+    }
+    // console.log(userdata.dataValues.stripeCustomerId)
+
+    // res.send("Imee")
+    if (userdata.dataValues.stripeCustomerId) {
+      const session = await stripe.checkout.sessions.create({
+        payment_method_types: ["card"], // Payment methods allowed (e.g., card)
+        line_items: [
+          {
+            price: priceId,
+            quantity: 1,
+          },
+        ],
+        mode: "subscription", // 'payment' or 'subscription'
+        success_url: process.env.STRIPE_PAYMENT_SUCESS, // Redirect URL after successful payment
+        cancel_url: process.env.STRIPE_PAYMENT_FAILURE, // Redirect URL if payment is canceled
+        customer: userdata.dataValues.stripeCustomerId,
+      });
+
+      res.json({ id: session.url });
+    }
+
+
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
 };
 
+
+
 exports.createSubscription = async (req, res, next) => {
   const { packageSubscription, User } = req.db.models;
+  const createdBy = req?.auth?.data?.userId;
 
   try {
-    const { priceId, paymentMethodId, customerId, userId, packageId } =
+    const { priceId, paymentMethodId, customerId, packageId } =
       req.body;
 
     console.log(req.body);
 
-    if (!priceId || !paymentMethodId || !customerId || !userId || !packageId) {
+    if (!priceId || !paymentMethodId || !customerId || !createdBy || !packageId) {
       return res
         .status(400)
         .json({ message: "Provide all Details--Provided Details are empty" });
@@ -79,19 +101,13 @@ exports.createSubscription = async (req, res, next) => {
         console.log("Subscription created:", subscription);
         packageSubscription
           .create({
-            userId: userId,
+            userId: createdBy,
             subsciptionStatus: subscription.status,
             packageId: packageId,
             PurchasedsubscriptionId_Stripe: subscription.id,
           })
           .then(async (resp) => {
-            // const userType = packageId === 1 ? "premium" : packageId === 2 ? "platinum" : packageId === 3 ? "free"
-            // let data  ={
 
-            // }
-            // const [updatedRows] = await User.update( {
-            //   where: { userId },
-            // });
             res.status(200).send({
               status: true,
               message: "Subscription Purchased Successfully",
@@ -172,7 +188,8 @@ exports.startAutoRenewal = async (req, res) => {
       .status(500)
       .json({ message: "Failed to start auto-renewal", error: error.message });
   }
-};
+}
+  ;
 
 exports.getAllProductDetails = async (req, res) => {
   try {

@@ -4,11 +4,11 @@ const jobeDetailController = require("../app/controllers/JobDetailController");
 // const PackageController = require('../app/controllers/PackageController');
 
 // router.get('/login', jobeDetailController.loginPage);
-router.post("/scrapjobdetail-usinglink", jobeDetailController.createJobDetail);
-router.get("/getjobdetailbyid/:id", jobeDetailController.getJobDetailById);
-router.get("/getalljobdetail", jobeDetailController.getAllJobDetail);
+router.post("/createJobDetail", jobeDetailController.createJobDetail);
+router.get("/getJobdDetailById/:id", jobeDetailController.getJobDetailById);
+router.get("/getAllJobDetail", jobeDetailController.getAllJobDetail);
 
-router.put("/updatejobdetail/:id", jobeDetailController.updateJobDetail);
-router.delete("/deletejobdetail/:id", jobeDetailController.deleteJobDetail);
+router.put("/updateJobDetail/:id", jobeDetailController.updateJobDetail);
+router.delete("/deleteJobDetail/:id", jobeDetailController.deleteJobDetail);
 
 module.exports = router;

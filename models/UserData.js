@@ -13,21 +13,21 @@ module.exports = (sequelize, DataTypes) => {
         User,
         packageSubscription,
       } = models;
-      UserData.belongsTo(User, {
-        foreignKey: "userId", // The foreign key referencing the User model
-      });
-      UserData.hasMany(ResumeDetail, {
-        onDelete: "CASCADE",
-        foreignKey: "userDataId",
-      });
-      UserData.hasMany(jobDetail, {
-        onDelete: "CASCADE",
-        foreignKey: "userDataId",
-      });
-      UserData.hasMany(AIresume, {
-        onDelete: "CASCADE",
-        foreignKey: "userDataId",
-      });
+      // UserData.belongsTo(User, {
+      //   foreignKey: "userId", // The foreign key referencing the User model
+      // });
+      // UserData.hasMany(ResumeDetail, {
+      //   onDelete: "CASCADE",
+      //   foreignKey: "userDataId",
+      // });
+      // UserData.hasMany(jobDetail, {
+      //   onDelete: "CASCADE",
+      //   foreignKey: "userDataId",
+      // });
+      // UserData.hasMany(AIresume, {
+      //   onDelete: "CASCADE",
+      //   foreignKey: "userDataId",
+      // });
       // UserData.hasMany(packageSubscription, {
       //   onDelete: "CASCADE",
       //   foreignKey: "userDataId",

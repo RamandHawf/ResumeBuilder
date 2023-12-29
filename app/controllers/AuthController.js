@@ -259,10 +259,14 @@ exports.accountVerify = async (req, res, next) => {
     const { User } = req.db.models;
 
     const { verificationToken } = req.query;
+    console.log(process.env.JWT_VERIFY_TOKEN);
+    // console.log(verificationToken);
+    console.log(verificationToken)
     var decoded = await jwt.verify(
       verificationToken,
       process.env.JWT_VERIFY_TOKEN
     );
+    console.log('Decoded Token', decoded)
 
 
 
@@ -275,6 +279,7 @@ exports.accountVerify = async (req, res, next) => {
     })
       .then(async (user) => {
 
+        console.log("Haf", user)
         if (user && user.dataValues.verificationToken === verificationToken) {
           let result = await user.update({
             isVerified: true,
@@ -497,3 +502,31 @@ exports.getUser = async (req, res, next) => {
       .send({ status: false, message: "Something went wrong", err });
   }
 };
+
+
+exports.paymentsuccessurl = async (req, res, next) => {
+
+  try {
+    res.sendFile(path.join(__dirname, "..", "..", "public", "paymentSuccess.html"));
+
+    // res.redirect(process.env.STRIPE_PAYMENT_SUCESS);
+
+  } catch (error) {
+    res.status(500).send({ status: false, message: "Internal Server Er ror" })
+  }
+
+}
+
+exports.paymentfailureurl = async (req, res, next) => {
+  try {
+
+    res.sendFile(path.join(__dirname, "..", "..", "public", "PaymentFailure.html"));
+
+    // res.redirect(process.env.STRIPE_PAYMENT_FAILURE);
+
+  } catch (error) {
+    res.status(500).send({ status: false, message: "Interna Server  Error" })
+  }
+
+
+}

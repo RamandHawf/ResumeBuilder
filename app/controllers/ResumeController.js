@@ -7,15 +7,15 @@ const fs = require("fs");
 exports.createResume = async (req, res, next) => {
   const { ResumeDetail } = req.db.models;
   try {
-    const { userDataId } = req.body;
-
-    console.log(userDataId);
+    // const { userDataId } = req.body;
+    const createdBy = req?.auth?.data?.userId;
+    // console.log(userDataId);
 
     if (!req.file) {
       return res.status(400).json({ message: "No file uploaded." });
     }
 
-    if (!userDataId || !req.file) {
+    if (!createdBy || !req.file) {
       return res
         .status(400)
         .json({ message: "No file uploaded and No userDta is provided yet ." });
@@ -52,12 +52,12 @@ exports.createResume = async (req, res, next) => {
       axios
         .request(config)
         .then(async (response) => {
-          console.log("response from server", response);
+          // console.log("response from server", response);
           let resps = JSON.stringify(response.data);
-          console.log(resps);
+          // console.log(resps);
           const newResume = await ResumeDetail.create({
             resumeDetail: resps,
-            userDataId: userDataId,
+            userId: createdBy,
           });
 
           return res.status(201).send({
@@ -67,13 +67,13 @@ exports.createResume = async (req, res, next) => {
           });
         })
         .catch((error) => {
-          console.log(error);
+          // console.log(error);
         });
     } else {
       res.status(500).send({ message: "Internal Server Error" });
     }
   } catch (error) {
-    console.error("Error creating resume:", error);
+    // console.error("Error creating resume:", error);
     return res.status(500).send({
       status: false,
       message: "An error occurred while creating the resume.",
@@ -89,7 +89,7 @@ exports.getallresume = async (req, res, next) => {
   try {
     const resume = await ResumeDetail.findAll();
 
-    console.log(resume);
+    // console.log(resume);
     if (resume) {
       return res.status(200).send({
         status: true,
@@ -103,7 +103,7 @@ exports.getallresume = async (req, res, next) => {
       });
     }
   } catch (error) {
-    console.error("Error getting All resume:", error);
+    // console.error("Error getting All resume:", error);
     return res.status(500).send({
       status: false,
       message: "An error occurred while retrieving the resume.",
@@ -132,7 +132,7 @@ exports.getResumeById = async (req, res, next) => {
       });
     }
   } catch (error) {
-    console.error("Error getting resume by ID:", error);
+    // console.error("Error getting resume by ID:", error);
     return res.status(500).send({
       status: false,
       message: "An error occurred while retrieving the resume.",
@@ -168,7 +168,7 @@ exports.updateResumeById = async (req, res, next) => {
       });
     }
   } catch (error) {
-    console.error("Error updating resume by ID:", error);
+    // console.error("Error updating resume by ID:", error);
     return res.status(500).send({
       status: false,
       message: "An error occurred while updating the resume.",
@@ -197,7 +197,7 @@ exports.deleteResumeById = async (req, res, next) => {
       });
     }
   } catch (error) {
-    console.error("Error deleting resume by ID:", error);
+    // console.error("Error deleting resume by ID:", error);
     return res.status(500).send({
       status: false,
       message: "An error occurred while deleting the resume.",

@@ -18,7 +18,7 @@ exports.createAiResumeVariant = async (req, res) => {
   const { aiResumeId, section_name, comment, resumeDetailId, jobDetailId } =
     req.body;
 
-  console.log(req.body);
+  // console.log(req.body);
   try {
     const [ai_resumedata, ai_resume_variant_row_count] = await Promise.all([
       AIresume.findByPk(aiResumeId),
@@ -42,7 +42,7 @@ exports.createAiResumeVariant = async (req, res) => {
         let config = {
           method: "POST",
           maxBodyLength: Infinity,
-          url: `${process.env.AI_URL}/airesumevariant`,
+          url: `${process.env.AI_URL}/ai_resume_variant`,
           headers: {
             ...data.getHeaders(),
           },
@@ -53,13 +53,13 @@ exports.createAiResumeVariant = async (req, res) => {
           .request(config)
           .then((response) => {
             try {
-              console.log(response);
-              const decodedBuffer = Buffer.from(response.data[0], "base64");
+              console.log(response.data);
+              // const decodedBuffer = Buffer.from(response.data[0], "base64");
               console.log("Name is khan");
               const params = {
                 Bucket: process.env.S3BUCKET_NAME,
                 Key: `AI-Variant-Resume-${aiResumeId}-${Date.now()}.pdf`, // Use the original filename for the S3 object
-                Body: decodedBuffer,
+                Body: JSON.stringify(response.data),
               };
               s3.upload(params, async (err, data) => {
                 if (err) {
@@ -73,7 +73,7 @@ exports.createAiResumeVariant = async (req, res) => {
                     .create({
                       aiResumeId: aiResumeId,
                       aiResume_VariantLink: data.Location,
-                      aiResume_VariantDetail: JSON.stringify(response.data[1]),
+                      aiResume_VariantDetail: JSON.stringify(response.data),
                       jobDetailId: jobDetailId,
                       resumeDetailId: resumeDetailId,
                     })
@@ -84,7 +84,7 @@ exports.createAiResumeVariant = async (req, res) => {
                       console.log(err);
                       res
                         .status(500)
-                        .send({ message: "Internal Server Error", error: err });
+                        .send({ message: "Internal Server Error" });
                     });
                 } else {
                   res.status(200).send({
@@ -96,17 +96,19 @@ exports.createAiResumeVariant = async (req, res) => {
               });
             } catch (error) {
               console.log(error);
-              res.status(500).send({ status: false, error: error });
+              res.status(500).send({ status: false, error: "Internal Server Error" });
             }
           })
           .catch((err) => {
+            console.log("Error")
+            console.log(err)
             res
               .status(500)
-              .send({ message: "Internal Server Error", error: err });
+              .send({ message: "Internal Server Error" });
           });
       } catch (err) {
-        console.log("Error", err);
-        res.status(500).send({ status: false, error: err });
+        // console.log("Error", err);
+        res.status(500).send({ status: false, error: "Internal Server Error" });
       }
     } else {
       return res.status(404).send({
@@ -115,10 +117,10 @@ exports.createAiResumeVariant = async (req, res) => {
       });
     }
   } catch (error) {
-    console.error("Error creating aiResumeVariant:", error);
+    // console.error("Error creating aiResumeVariant:", error);
     res.status(500).json({
       message: "Failed to create aiResumeVariant",
-      error: error.message,
+      // error: error.message,
     });
   }
 };

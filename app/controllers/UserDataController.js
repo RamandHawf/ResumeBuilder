@@ -1,4 +1,4 @@
-const {sequelize} = require("../../models/index");
+const { sequelize } = require("../../models/index");
 // Create User Data
 exports.createUserData = async (req, res) => {
   const { UserData } = req.db.models;
@@ -34,9 +34,9 @@ exports.getUserDatabyid = async (req, res) => {
   const { UserData } = req.db.models;
   const { id } = req.params;
   try {
-    const userData = await UserData.findOne({
+    const userData = await UserData.findAll({
       where: {
-        id: id,
+        userId: id,
       },
     });
     return res.status(200).send({
@@ -56,9 +56,18 @@ exports.getUserDatabyid = async (req, res) => {
 exports.getUserData = async (req, res) => {
   const { UserData } = req.db.models;
   const { id } = req.params;
+  const createdBy = req?.auth?.data?.userId;
+
+
   console.log("The Id is :", id);
   try {
-    const userData = await UserData.findAll();
+    const userData = await UserData.findAll(
+      {
+        where: {
+          userId: createdBy
+        }
+      }
+    );
     return res.status(200).send({
       status: true,
       userData,
@@ -127,14 +136,14 @@ exports.deleteUserData = async (req, res) => {
     await AIresume.destroy({ where: { userDataId: id }, transaction });
     await jobDetail.destroy({ where: { userDataId: id }, transaction });
 
-     await transaction.commit(); // Commit the transaction
-  
-  return res.status(200).json({
-    status: true,
-    message: "UserData and related rows deleted successfully.",
-  });
+    await transaction.commit(); // Commit the transaction
 
-    
+    return res.status(200).json({
+      status: true,
+      message: "UserData and related rows deleted successfully.",
+    });
+
+
   } catch (error) {
     await transaction.rollback(); // Rollback the transaction in case of error
     console.error("Error deleting UserData and related rows:", error);

@@ -11,13 +11,28 @@ module.exports = (sequelize, DataTypes) => {
     static associate(models) {
       // define association here
 
-      User.hasOne(models.UserData, {
-        foreignKey: "userId", // The foreign key in the associated model (Profile)
-      });
+      // User.hasOne(models.UserData, {
+      //   foreignKey: "userId", // The foreign key in the associated model (Profile)
+      // });
 
       User.hasMany(models.packageSubscription, {
         foreignKey: "userId", // The foreign key in the associated model (Profile)
       });
+      User.hasMany(models.ResumeDetail, {
+        onDelete: "CASCADE",
+        foreignKey: "userId",
+      });
+      User.hasMany(models.jobDetail, {
+        onDelete: "CASCADE",
+        foreignKey: "userId",
+      });
+      User.hasMany(models.AIresume, {
+        onDelete: "CASCADE",
+        foreignKey: "userId",
+      });
+
+
+
     }
     static getUserWithRole() {
       console.log("user with log called");

@@ -62,8 +62,12 @@ app.use(
       "/api/auth/success",
       "/api/auth/fail",
       "/api/auth/resendVerificationEmail",
+      // "/api/gateway/create-payment",
       "/api/gateway/create-subscription",
       "api//getAllProductDetails",
+      "api/auth/",
+      "/api/auth/stripepaymentsuccess",
+      "/api/auth/stripepaymentfailure"
     ],
   })
 );
@@ -77,7 +81,7 @@ app.use("/api/admin", adminRoutes);
 app.use("/api/userdata", userdataRoutes);
 app.use("/api/resumedata", resumeRoutes);
 app.use("/api/jobdetail", jobdetailRoutes);
-app.use("/api/AiResume", AiresumeRoutes);
+app.use("/api/airesume", AiresumeRoutes);
 app.use("/api/packages", packagesRoutes);
 app.use("/api/packages-subscription", packageSubscription);
 app.use("/api/gateway", PaymentGatewayRoutes);

@@ -7,24 +7,24 @@ const StripeMidMan = require("../app/middlewares/StripeMaster");
 // // Middleware to check subscription validity
 
 router.post(
-  "/create-airesumevariants",
+  "/createAiResumeVariants",
   // StripeMidMan.checkSubscriptionValidity,
   aiResumeVariantsController.createAiResumeVariant
 );
 router.get(
-  "/getall-airesumevariants",
+  "/getAllAiresumeVariants",
   aiResumeVariantsController.getAllAiResumeVariants
 );
 router.get(
-  "/getairesumevariants/:id",
+  "/getAiResumeVariants/:id",
   aiResumeVariantsController.getAiResumeVariantById
 );
 router.put(
-  "/update-airesumevariants/:id",
+  "/updateAiResumeVariants/:id",
   aiResumeVariantsController.updateAiResumeVariant
 );
 router.delete(
-  "/deleteairesume-variants/:id",
+  "/deleteAiresumeVariants/:id",
   aiResumeVariantsController.deleteAiResumeVariant
 );
 

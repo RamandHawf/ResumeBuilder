@@ -6,17 +6,18 @@ const http = require("http");
 // In your controllers.js or where your CRUD functions are defined:
 exports.createJobDetail = async (req, res, next) => {
   const { jobDetail } = req.db.models;
-  const { jobdetaillink, userDataId } = req.body;
+  const { jobdetaillink } = req.body;
+  const createdBy = req?.auth?.data?.userId;
 
   try {
-    console.log(req.body);
-    if (!jobdetaillink || !userDataId) {
+    // console.log(req.body);
+    if (!jobdetaillink || !createdBy) {
       res
         .status(200)
         .send({ message: "Provide job detail link and UserDataId" });
     }
 
-    if (jobdetaillink && userDataId) {
+    if (jobdetaillink && createdBy) {
       console.log("fIRST");
       let data = new FormData();
       data.append("link", jobdetaillink);
@@ -33,19 +34,19 @@ exports.createJobDetail = async (req, res, next) => {
         },
         data: data,
       };
-      console.log("sECOND");
+      // console.log("sECOND");
       axios
         .request(config)
         .then(async (response) => {
-          console.log("THIRD");
-          console.log("response", response);
-          console.log("for data", response.data);
-          console.log("for error", response.data.error);
+          // console.log("THIRD");
+          // console.log("response", response);
+          // console.log("for data", response.data);
+          // console.log("for error", response.data.error);
           let resps = JSON.stringify(response.data);
 
-          console.log(resps);
+          // console.log(resps);
           if (!response.data) {
-            console.log("Fourth");
+            // console.log("Fourth");
             res.status(200).send({
               status: true,
               message: "Scrapping Failed",
@@ -54,24 +55,24 @@ exports.createJobDetail = async (req, res, next) => {
           }
           // console.log("response", JSON.parse(resps));
           if (response) {
-            console.log("Fifth");
+            // console.log("Fifth");
             if (response.data.error) {
-              console.log("Sixth");
-              console.log("Error:", response.data.error);
+              // console.log("Sixth");
+              // console.log("Error:", response.data.error);
               return res
                 .status(400)
                 .json({ status: false, error: response.data });
             } else {
               if (response.data) {
-                console.log(":Seventh");
-                console.log("Data Received");
+                // console.log(":Seventh");
+                // console.log("Data Received");
 
                 try {
-                  console.log("Eigth");
+                  // console.log("Eigth");
                   const newJobDetail = await jobDetail.create({
                     jobdetaillink: jobdetaillink,
                     jobdetail: resps,
-                    userDataId: userDataId,
+                    userId: createdBy,
                   });
                   return res.status(201).json({
                     status: true,
@@ -79,8 +80,8 @@ exports.createJobDetail = async (req, res, next) => {
                     jobDetail: newJobDetail,
                   });
                 } catch (err) {
-                  console.log("Ninth");
-                  console.error("Error creating job detail:", err);
+                  // console.log("Ninth");
+                  // console.error("Error creating job detail:", err);
                   return res.status(500).json({
                     status: false,
                     error: "Failed to create job detail.",
@@ -89,8 +90,8 @@ exports.createJobDetail = async (req, res, next) => {
               }
             }
           } else {
-            console.log("Tenth");
-            console.error("Empty or undefined response.");
+            // console.log("Tenth");
+            // console.error("Empty or undefined response.");
             return res.status(500).json({
               status: false,
               error: "Empty or undefined response from the server.",
@@ -98,20 +99,20 @@ exports.createJobDetail = async (req, res, next) => {
           }
         })
         .catch((error) => {
-          console.log("Eleventh");
+          // console.log("Eleventh");
           if (error.code === "ETIMEDOUT") {
-            console.error("Request to AI server timed out:", error);
+            // console.error("Request to AI server timed out:", error);
             res.status(500).json({
               status: false,
               message: "Request to AI server timed out.",
-              error: error,
+              // error: error,
             });
           } else {
-            console.error("Axios request failed:", error);
+            // console.error("Axios request failed:", error);
             res.status(500).json({
               status: false,
               message: "Request to AI server failed.",
-              error: error,
+              // error: error,
             });
           }
         });
@@ -122,7 +123,7 @@ exports.createJobDetail = async (req, res, next) => {
       });
     }
   } catch (error) {
-    console.error("Error creating job detail:", error);
+    // console.error("Error creating job detail:", error);
     return res.status(500).json({
       status: false,
       message: "An error occurred while creating the job detail.",
@@ -149,7 +150,7 @@ exports.getAllJobDetail = async (req, res, next) => {
       jobDetail: jobDetailData,
     });
   } catch (error) {
-    console.error("Error getting job details:", error);
+    // console.error("Error getting job details:", error);
     return res.status(500).json({
       status: false,
       message: "An error occurred while getting the job detail.",
@@ -175,7 +176,7 @@ exports.getJobDetailById = async (req, res, next) => {
       jobDetail: jobDetailData,
     });
   } catch (error) {
-    console.error("Error getting job detail by ID:", error);
+    // console.error("Error getting job detail by ID:", error);
     return res.status(500).json({
       status: false,
       message: "An error occurred while getting the job detail.",
@@ -205,7 +206,7 @@ exports.updateJobDetail = async (req, res, next) => {
       jobDetail: jobDetailData,
     });
   } catch (error) {
-    console.error("Error updating job detail:", error);
+    // console.error("Error updating job detail:", error);
     return res.status(500).json({
       status: false,
       message: "An error occurred while updating the job detail.",
@@ -233,7 +234,7 @@ exports.deleteJobDetail = async (req, res, next) => {
       message: "Job detail deleted successfully.",
     });
   } catch (error) {
-    console.error("Error deleting job detail:", error);
+    // console.error("Error deleting job detail:", error);
     return res.status(500).json({
       status: false,
       message: "An error occurred while deleting the job detail.",

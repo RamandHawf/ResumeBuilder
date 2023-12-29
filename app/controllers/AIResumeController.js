@@ -15,28 +15,29 @@ exports.createAIresume = async (req, res, next) => {
   const { AIresume } = req.db.models;
   const { ResumeDetail } = req.db.models;
   const { jobDetail } = req.db.models;
+  const createdBy = req?.auth?.data?.userId;
 
-  const { userDataId, jobdetailId, resumeId } = req.body;
+  const { jobdetailId, resumeId } = req.body;
   try {
     // Check the file type (MIME type)
-    if (!userDataId || !jobdetailId || !resumeId) {
+    if (!createdBy || !jobdetailId || !resumeId) {
       return res.status(400).json({
         message:
           "You are not providing the detail  UserDataId ,job_Description and resume data.",
       });
     }
-    if (userDataId && resumeId && jobdetailId) {
+    if (createdBy && resumeId && jobdetailId) {
       const [resumeData1, jobdetail1, rowCount] = await Promise.all([
         ResumeDetail.findByPk(resumeId),
         jobDetail.findByPk(jobdetailId),
-        AIresume.count({ where: { userDataId } }),
+        AIresume.count({ where: { userId: createdBy } }),
       ]);
 
-      console.log(
-        resumeData1.dataValues.resumeDetail,
-        jobdetail1.dataValues.jobdetail,
-        rowCount
-      );
+      // console.log(
+      //   resumeData1.dataValues.resumeDetail,
+      //   jobdetail1.dataValues.jobdetail,
+      //   rowCount
+      // );
       if (
         resumeData1?.dataValues?.resumeDetail &&
         jobdetail1?.dataValues?.jobdetail &&
@@ -44,8 +45,8 @@ exports.createAIresume = async (req, res, next) => {
       ) {
         const jsonString1 = JSON.parse(jobdetail1.dataValues.jobdetail);
         const jsonString2 = JSON.parse(resumeData1.dataValues.resumeDetail);
-        console.log("First One", jsonString1);
-        console.log("Second One", jsonString2);
+        // console.log("First One", jsonString1);
+        // console.log("Second One", jsonString2);
         // fs.writeFileSync("job_desc.json", job_desc);
         // fs.writeFileSync("json_resume.json", json_resume);
         const data = new FormData();
@@ -70,10 +71,10 @@ exports.createAIresume = async (req, res, next) => {
             //   `AI-Resume-${userDataId}-${Date.now()}.pdf`,
             //   response.data[0]
             // );
-            console.log(JSON.stringify(response.data));
+            // console.log(JSON.stringify(response.data));
             const params = {
               Bucket: process.env.S3BUCKET_NAME,
-              Key: `AI-Resume-${userDataId}-${Date.now()}.pdf`, // Use the original filename for the S3 object
+              Key: `AI-Resume-${createdBy}-${Date.now()}.pdf`, // Use the original filename for the S3 object
               Body: decodedBuffer,
             };
             s3.upload(params, async (err, data) => {
@@ -86,7 +87,7 @@ exports.createAIresume = async (req, res, next) => {
                 AIresume.create({
                   AIresumeLink: data.Location,
                   AIresumeDetail: JSON.stringify(response.data[1]),
-                  userDataId: userDataId,
+                  UserId: createdBy,
                 })
                   .then((response) => {
                     res.status(201).json(response);
