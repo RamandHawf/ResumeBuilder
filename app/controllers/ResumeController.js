@@ -4,89 +4,68 @@ const fs = require("fs");
 
 // Create a new resume
 
+// const axios = require('axios');
+
+
 exports.createResume = async (req, res, next) => {
   const { ResumeDetail } = req.db.models;
-  try {
-    // const { userDataId } = req.body;
-    const createdBy = req?.auth?.data?.userId;
-    // console.log(userDataId);
 
-    if (!req.file) {
-      return res.status(400).json({ message: "No file uploaded." });
-    }
+  try {
+    const createdBy = req?.auth?.data?.userId;
 
     if (!createdBy || !req.file) {
-      return res
-        .status(400)
-        .json({ message: "No file uploaded and No userDta is provided yet ." });
+      return res.status(400).json({ message: "No file uploaded or user data provided." });
     }
 
     // Check the file type
-    if (
-      req.file.mimetype !== "application/pdf" &&
-      req.file.mimetype !== "application/msword"
-    ) {
-      return res
-        .status(400)
-        .json({ message: "Only PDF or DOC files are allowed." });
+    if (req.file.mimetype !== "application/pdf" && req.file.mimetype !== "application/msword") {
+      return res.status(400).json({ message: "Only PDF or DOC files are allowed." });
     }
-    console.log("Flow Start")
 
-    if (req.file) {
-      console.log("File Inside")
-      let data = new FormData();
-      console.log(req.file.buffer);
-      data.append("file", req.file.buffer, {
-        filename: req.file.originalname,
-        contentType: req.file.mimetype,
-      });
+    // Decode the buffer (assuming it's base64 encoded)
+    const decodedBuffer = Buffer.from(req.file.buffer, 'base64');
 
+    // Create form data
+    const formData = new FormData();
+    formData.append('file', decodedBuffer, {
+      filename: req.file.originalname,
+      contentType: req.file.mimetype,
+    });
 
-      let config = {
-        method: "post",
-        maxBodyLength: Infinity,
-        url: `${process.env.AI_URL}/parse_resume`,
-        headers: {
-          ...data.getHeaders(),
-        },
-        data: data,
-      };
-      console.log(config)
+    // Set up axios configuration
+    const config = {
+      method: "post",
+      maxBodyLength: Infinity,
+      url: `${process.env.AI_URL}/parse_resume`,
+      headers: {
+        ...formData.getHeaders(),
+      },
+      data: formData,
+    };
 
-      axios
-        .request(config)
-        .then(async (response) => {
-          console.log("response from server", response);
-          let resps = JSON.stringify(response.data);
-          // console.log(resps);
-          const newResume = await ResumeDetail.create({
-            resumeDetail: resps,
-            userId: createdBy,
-          });
+    const response = await axios.request(config);
+    console.log(response);
 
-          return res.status(201).send({
-            status: true,
-            message: "ResumeDetail created successfully.",
-            resume: newResume.toJSON(),
-          });
-        })
-        .catch((error) => {
-          console.log(error);
-          res.status(500).send({ message: "Internal Server Error", error: error })
+    const newResume = await ResumeDetail.create({
+      resumeDetail: JSON.stringify(response.data),
+      userId: createdBy,
+    });
 
-        });
-    } else {
-      res.status(500).send({ message: "Internal Server Error" });
-    }
+    return res.status(201).send({
+      status: true,
+      message: "ResumeDetail created successfully.",
+      resume: newResume.toJSON(),
+    });
   } catch (error) {
-    // console.error("Error creating resume:", error);
+    console.error("Error creating resume:", error);
     return res.status(500).send({
       status: false,
       message: "An error occurred while creating the resume.",
-      error,
+      error: error.message,
     });
   }
 };
+
 
 // Get resume by ID
 exports.getallresume = async (req, res, next) => {
