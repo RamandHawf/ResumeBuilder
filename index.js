@@ -54,7 +54,7 @@ app.use(
     path: [
       "/api/ping",
       "/api/auth/signUp",
-      "/api/auth/login",
+      "/api/auth/logIn",
       "/api/auth/resetPassword",
       "/api/auth/forgotPassword",
       "/api/auth/verify",
