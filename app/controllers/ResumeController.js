@@ -44,18 +44,23 @@ exports.createResume = async (req, res, next) => {
     };
 
     const response = await axios.request(config);
-    console.log(response);
+    // console.log(response);
+    if (response?.data) {
+      const newResume = await ResumeDetail.create({
+        resumeDetail: JSON.stringify(response.data),
+        userId: createdBy,
+      });
 
-    const newResume = await ResumeDetail.create({
-      resumeDetail: JSON.stringify(response.data),
-      userId: createdBy,
-    });
+      return res.status(201).send({
+        status: true,
+        message: "ResumeDetail created successfully.",
+        resume: newResume.toJSON(),
+      });
+    }
+    else {
+      res.status(500).send({ message: "Resume Not Created successfully" });
+    }
 
-    return res.status(201).send({
-      status: true,
-      message: "ResumeDetail created successfully.",
-      resume: newResume.toJSON(),
-    });
   } catch (error) {
     console.error("Error creating resume:", error);
     return res.status(500).send({
