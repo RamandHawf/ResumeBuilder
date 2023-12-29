@@ -39,8 +39,8 @@ exports.createpayment = async (req, res) => {
           },
         ],
         mode: "subscription", // 'payment' or 'subscription'
-        success_url: process.env.STRIPE_PAYMENT_SUCESS, // Redirect URL after successful payment
-        cancel_url: process.env.STRIPE_PAYMENT_FAILURE, // Redirect URL if payment is canceled
+        success_url: `${process.env.URL_SERVER}/api/auth/stripepaymentsuccess`, // Redirect URL after successful payment
+        cancel_url: `${process.env.URL_SERVER}/api/auth/stripepaymentfailure`, // Redirect URL if payment is canceled
         customer: userdata.dataValues.stripeCustomerId,
       });
 
