@@ -41,6 +41,8 @@ exports.createResume = async (req, res, next) => {
         ...formData.getHeaders(),
       },
       data: formData,
+      timeout: 128000, // Set timeout to 2 minutes and 8 seconds
+
     };
 
     const response = await axios.request(config);
