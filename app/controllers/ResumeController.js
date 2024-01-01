@@ -66,12 +66,17 @@ exports.createResume = async (req, res, next) => {
     }
 
   } catch (error) {
-    console.error("Error creating resume:", error);
-    return res.status(500).send({
-      status: false,
-      message: "An error occurred while creating the resume.",
-      error: error.message,
-    });
+    // console.error("Error creating resume:", error);
+    if (error.message === "Request failed with status code 429") {
+      res.status(429).send({ status: true, message: "Parse only one resume in 10 minute - Retry After 10 minute." })
+    }
+    else {
+      return res.status(500).send({
+        status: false,
+        message: "An error occurred while creating the resume.",
+        error: error.message,
+      });
+    }
   }
 };
 
