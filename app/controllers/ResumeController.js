@@ -13,6 +13,8 @@ exports.createResume = async (req, res, next) => {
   try {
     const createdBy = req?.auth?.data?.userId;
 
+    console.log(createdBy)
+
     if (!createdBy || !req.file) {
       return res.status(400).json({ message: "No file uploaded or user data provided." });
     }
