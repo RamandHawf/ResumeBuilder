@@ -384,7 +384,7 @@ exports.forgotPassword = async (req, res, next) => {
             to: req.body.email, // list of receivers
             subject: "Reset password Email", // Subject line
             text: "reset email", // plain text body
-            html: `<b>Verify email at <a href=${process.env.VERIFY_URL}/reset-password?verificationToken=${token}>Click Here to reset Password</a></b>`, // html body
+            html: `<b>Verify email at <a href=${process.env.VERIFY_URL}/resetPassword?verificationToken=${token}>Click Here to reset Password</a></b>`, // html body
           });
           res.status(200).send({
             message: "A link has been sent to your registered email. ",
