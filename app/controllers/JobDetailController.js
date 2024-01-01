@@ -42,8 +42,9 @@ exports.createJobDetail = async (req, res, next) => {
           // console.log("response", response);
           // console.log("for data", response.data);
           // console.log("for error", response.data.error);
-          let resps = JSON.stringify(response.data);
 
+
+          console.log(response)
           // console.log(resps);
           if (!response.data) {
             // console.log("Fourth");
@@ -56,14 +57,15 @@ exports.createJobDetail = async (req, res, next) => {
           // console.log("response", JSON.parse(resps));
           if (response) {
             // console.log("Fifth");
-            if (response.data.error) {
+            if (response?.data?.Error === "Somewthing went wrong" || response?.data?.Error) {
               // console.log("Sixth");
               // console.log("Error:", response.data.error);
               return res
                 .status(400)
-                .json({ status: false, error: response.data });
+                .json({ status: false, error: "Somethig Went Wrong Please Retry -AI" });
             } else {
               if (response.data) {
+                let resps = JSON.stringify(response.data);
                 // console.log(":Seventh");
                 // console.log("Data Received");
 
