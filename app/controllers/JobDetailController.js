@@ -80,6 +80,7 @@ exports.createJobDetail = async (req, res, next) => {
                     jobDetail: newJobDetail,
                   });
                 } catch (err) {
+                  console.log(err)
                   // console.log("Ninth");
                   // console.error("Error creating job detail:", err);
                   return res.status(500).json({

@@ -3,7 +3,7 @@ const { Model, DataTypes } = require('sequelize');
 module.exports = (sequelize) => {
   class jobDetail extends Model {
     static associate(models) {
-  
+
     }
 
     static getjobDetails() {
@@ -14,7 +14,7 @@ module.exports = (sequelize) => {
   jobDetail.init({
     // ... define attributes for ResumeDetail
     jobdetaillink: {
-      type: DataTypes.STRING,
+      type: DataTypes.TEXT,
       allowNull: true,
 
     },
@@ -22,7 +22,7 @@ module.exports = (sequelize) => {
       type: DataTypes.TEXT,
       allowNull: false
     },
-    
+
   }, {
     sequelize,
     modelName: 'jobDetail',
