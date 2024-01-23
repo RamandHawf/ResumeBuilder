@@ -7,17 +7,20 @@ const userDataController = require('../app/controllers/UserDataController');
 router.post('/createuserdata', userDataController.createUserData);
 
 // Get user data by ID
-router.get('/getalluserdata', userDataController.getUserData);
+// router.get('/getalluserdata', userDataController.getUserData);
 
-router.get("/getuserdatabyid/:id", userDataController.getUserDatabyid);
+// router.get("/getuserdatabyid/:id", userDataController.getUserDatabyid);
+router.get("/getuserdata", userDataController.getUserData);
 
 
 // Update user data by ID
-router.put('/updateuserdata/:id', userDataController.updateUserData);
+// router.put('/updateuserdata/:id', userDataController.updateUserData);
+router.put('/updateuserdata', userDataController.updateUserData);
 
 // Delete user data by ID
-router.delete('/deleteuserdata/:id', userDataController.deleteUserData);
+// router.delete('/deleteuserdata/:id', userDataController.deleteUserData);
 
+router.delete('/deleteuserdata/:id', userDataController.deleteUserData);
 
 
 

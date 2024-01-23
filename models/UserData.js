@@ -13,9 +13,9 @@ module.exports = (sequelize, DataTypes) => {
         User,
         packageSubscription,
       } = models;
-      // UserData.belongsTo(User, {
-      //   foreignKey: "userId", // The foreign key referencing the User model
-      // });
+      UserData.belongsTo(User, {
+        foreignKey: "userId", // The foreign key referencing the User model
+      });
       // UserData.hasMany(ResumeDetail, {
       //   onDelete: "CASCADE",
       //   foreignKey: "userDataId",
@@ -45,11 +45,22 @@ module.exports = (sequelize, DataTypes) => {
         type: DataTypes.STRING,
         allowNull: true,
       },
-      account_no: {
+      address: {
         type: DataTypes.STRING,
         allowNull: true,
       },
-
+      phone_no: {
+        type: DataTypes.INTEGER,
+        allowNull: true,
+      },
+      city: {
+        type: DataTypes.STRING,
+        allowNull: true,
+      },
+      country: {
+        type: DataTypes.STRING,
+        allowNull: true,
+      },
       // For JobDetail relationship
     },
     {

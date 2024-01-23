@@ -11,9 +11,9 @@ module.exports = (sequelize, DataTypes) => {
     static associate(models) {
       // define association here
 
-      // User.hasOne(models.UserData, {
-      //   foreignKey: "userId", // The foreign key in the associated model (Profile)
-      // });
+      User.hasOne(models.UserData, {
+        foreignKey: "userId", // The foreign key in the associated model (Profile)
+      });
 
       User.hasMany(models.packageSubscription, {
         foreignKey: "userId", // The foreign key in the associated model (Profile)
