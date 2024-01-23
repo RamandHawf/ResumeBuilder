@@ -7,9 +7,9 @@ const userDataController = require('../app/controllers/UserDataController');
 router.post('/createUserData', userDataController.createUserData);
 
 // Get user data by ID
-// router.get('/getalluserdata', userDataController.getUserData);
+router.get('/getAllUserData', userDataController.getUserDataALL);
 
-// router.get("/getuserdatabyid/:id", userDataController.getUserDatabyid);
+router.get("/getUserDataById/:id", userDataController.getUserDatabyid);
 router.get("/getUserData", userDataController.getUserData);
 
 

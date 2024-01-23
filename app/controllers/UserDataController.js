@@ -56,12 +56,10 @@ exports.getUserDatabyid = async (req, res) => {
   const { UserData } = req.db.models;
   // const { id } = req.params;
   const createdBy = req?.auth?.data?.userId;
+  const id = req.params.id
   try {
-    const userData = await UserData.findAll({
-      where: {
-        userId: id,
-      },
-    });
+    const userData = await UserData.findByPk(id);
+
     return res.status(200).send({
       status: true,
       userData,
@@ -127,6 +125,33 @@ exports.getUserData = async (req, res) => {
     });
   }
 };
+
+
+
+exports.getUserDataALL = async (req, res) => {
+  const { UserData } = req.db.models;
+  const { id } = req.params;
+  const createdBy = req?.auth?.data?.userId;
+
+
+  try {
+
+    const userData = await UserData.findAll();
+    return res.status(200).send({
+      status: true,
+      userData,
+    });
+  } catch (error) {
+    console.error("Error getting user data:", error);
+    return res.status(500).send({
+      status: false,
+      message: "An error occurred while getting user data.",
+      error: error.message,
+    });
+  }
+};
+
+
 
 // Update User Data
 exports.updateUserData = async (req, res) => {
