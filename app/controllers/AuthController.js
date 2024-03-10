@@ -370,7 +370,7 @@ exports.forgotPassword = async (req, res, next) => {
             process.env.JWT_RESET_TOKEN,
             { expiresIn: `${process.env.VERIFY_TOKEN_EXPIRY}` }
           );
-
+          const resetPasswordLink = `${process.env.RESETPASSWORD_SERVER_URL}/resetPassword.html?verificationToken=${token}`;
           user.resetToken = token;
           user.resetTokenExpiry = Date.now() + 3600000;
           const userSave = await user.save();
@@ -384,7 +384,7 @@ exports.forgotPassword = async (req, res, next) => {
             to: req.body.email, // list of receivers
             subject: "Reset password Email", // Subject line
             text: "reset email", // plain text body
-            html: `<b>Verify email at <a href=${process.env.VERIFY_URL}/resetPassword?verificationToken=${token}>Click Here to reset Password</a></b>`, // html body
+            html: `<b>Verify email at <a href=${resetPasswordLink}>Click Here to reset Password</a></b>`, // html body
           });
           res.status(200).send({
             message: "A link has been sent to your registered email. ",
