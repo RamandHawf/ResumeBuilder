@@ -370,7 +370,7 @@ exports.forgotPassword = async (req, res, next) => {
             process.env.JWT_RESET_TOKEN,
             { expiresIn: `${process.env.VERIFY_TOKEN_EXPIRY}` }
           );
-          const resetPasswordLink = `${process.env.RESETPASSWORD_SERVER_URL}/resetPassword.html?verificationToken=${token}`;
+          const resetPasswordLink = `${process.env.RESETPASSWORD_SERVER_URL}/api/auth/resetPasswordPage?verificationToken=${token}`;
           user.resetToken = token;
           user.resetTokenExpiry = Date.now() + 3600000;
           const userSave = await user.save();
@@ -408,6 +408,18 @@ exports.forgotPassword = async (req, res, next) => {
       .send({ status: false, message: "Something went wrong", err });
   }
 };
+// resetPasswordPage
+
+exports.resetPasswordPage = async (req, res, next) => {
+  const { verificationToken } = req.params;
+  console.log(path.join(__dirname + "./../../public/Resetpassword.html"))
+  try {
+    res.sendFile(path.join(__dirname + "./../../public/Resetpassword.html"));
+
+  } catch (error) {
+    console.log(error)
+  }
+}
 
 exports.resetPassword = async (req, res, next) => {
   try {

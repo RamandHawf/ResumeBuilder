@@ -67,7 +67,8 @@ app.use(
       "api//getAllProductDetails",
       "api/auth/",
       "/api/auth/stripepaymentsuccess",
-      "/api/auth/stripepaymentfailure"
+      "/api/auth/stripepaymentfailure",
+      "/api/auth/resetPasswordPage"
     ],
   })
 );

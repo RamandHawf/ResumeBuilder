@@ -21,6 +21,8 @@ router.post('/resetPassword', AuthController.resetPassword);
 router.post('/resendVerificationEmail', AuthController.resendVerificationEmail);
 router.get('/stripepaymentsuccess', AuthController.paymentsuccessurl);
 router.get('/stripepaymentfailure', AuthController.paymentfailureurl);
+router.get('/resetPasswordPage', AuthController.resetPasswordPage);
+
 
 
 
