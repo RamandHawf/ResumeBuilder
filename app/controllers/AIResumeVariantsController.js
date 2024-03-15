@@ -60,6 +60,9 @@ exports.createAiResumeVariant = async (req, res) => {
                 Bucket: process.env.S3BUCKET_NAME,
                 Key: `AI-Variant-Resume-${aiResumeId}-${Date.now()}.pdf`, // Use the original filename for the S3 object
                 Body: JSON.stringify(response.data),
+                ACL: "public-read",
+                ContentDisposition: 'inline',
+                ContentType: 'application/pdf',
               };
               s3.upload(params, async (err, data) => {
                 if (err) {
