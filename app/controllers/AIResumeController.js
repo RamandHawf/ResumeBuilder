@@ -66,7 +66,11 @@ exports.createAIresume = async (req, res) => {
       Body: decodedBuffer,
       contentTyoe: "application/pdf",
       ACL: "public-read",
+      ContentDisposition: 'inline',
+      ContentType: 'application/pdf',
     };
+
+    console.log(params)
 
     s3.upload(params, async (err, uploadData) => {
       if (err) {
