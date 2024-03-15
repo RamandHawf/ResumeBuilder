@@ -29,7 +29,7 @@ exports.createAIresume = async (req, res) => {
       AIresume.count({ where: { userId: createdBy } }),
     ]);
 
-    if (!resumeData || !jobdetail || rowCount >= 10) {
+    if (!resumeData || !jobdetail || rowCount >= 30) {
       return res.status(200).json({
         status: false,
         message: "No record found using your resumeId and jobdetailId, or maximum limit reached.",
