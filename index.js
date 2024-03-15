@@ -11,7 +11,7 @@ const app = express();
 // app.use(cors());
 app.use(
   cors({
-    origin: "http://localhost:3000", // Replace with the actual URL of your frontend
+    origin: "*", // Replace with the actual URL of your frontend
     methods: "GET,HEAD,PUT,PATCH,POST,DELETE",
     credentials: true, // Set this to true if you're using cookies or sessions
   })
@@ -68,7 +68,7 @@ app.use(
       "api/auth/",
       "/api/auth/stripepaymentsuccess",
       "/api/auth/stripepaymentfailure",
-      "/api/auth/resetPasswordPage"
+      "/api/auth/resetPasswordPage",
     ],
   })
 );

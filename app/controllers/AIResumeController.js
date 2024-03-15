@@ -64,6 +64,8 @@ exports.createAIresume = async (req, res) => {
       Bucket: process.env.S3BUCKET_NAME,
       Key: `AI-Resume-${createdBy}-${Date.now()}.pdf`,
       Body: decodedBuffer,
+      contentTyoe: "application/pdf",
+      ACL: "public-read",
     };
 
     s3.upload(params, async (err, uploadData) => {
